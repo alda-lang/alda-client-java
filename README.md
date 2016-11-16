@@ -1,6 +1,6 @@
-# alda client
+# alda-client-java
 
-Alda's command-line interface, written in Java.
+A Java command-line client for [Alda](https://github.com/alda-lang/alda), a music programming language for musicians.
 
 ## Usage
 
@@ -8,5 +8,5 @@ For information about available tasks, run `alda help`.
 
 ## Development
 
-See the [development guide](../doc/development-guide.md).
+See the [Alda development guide](https://github.com/alda-lang/alda/blob/master/doc/development-guide.md).
 
