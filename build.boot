@@ -4,7 +4,7 @@
                     "server/grammar" "examples"}
   :dependencies '[
                   ; dev
-                  [adzerk/bootlaces      "0.1.12" :scope "test"]
+                  [adzerk/bootlaces      "0.1.13" :scope "test"]
                   [adzerk/boot-test      "1.0.4"  :scope "test"]
                   [str-to-argv           "0.1.0"  :score "test"]
 
@@ -42,7 +42,7 @@
 
 (def ^:const +version+ "0.0.1")
 
-(bootlaces! +version+)
+(bootlaces! +version+ :dont-modify-paths? true)
 
 (defn- exe-version
   "Convert non-exe-friendly version numbers like 1.0.0-rc1 to four-number
@@ -246,8 +246,8 @@
                  "Home/jre/lib/rt.jar"))
     fileset))
 
-(deftask package
-  "Builds an uberjar."
+(deftask build
+  "Builds jar file."
   []
   (comp (assert-jdk7-bootclasspath)
         (javac)
