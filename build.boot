@@ -8,9 +8,6 @@
                   [adzerk/boot-test      "1.0.4"  :scope "test"]
                   [str-to-argv           "0.1.0"  :score "test"]
 
-                  ; silence slf4j logging dammit
-                  [org.slf4j/slf4j-nop        "1.7.21"]
-
                   ; shared
                   [org.zeromq/jeromq "0.3.5"]
 
