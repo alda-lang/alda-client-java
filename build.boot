@@ -246,7 +246,7 @@
                  "Home/jre/lib/rt.jar"))
     fileset))
 
-(deftask build
+(deftask package
   "Builds jar file."
   []
   (comp (assert-jdk7-bootclasspath)
@@ -255,7 +255,7 @@
         (jar)))
 
 (deftask deploy
-  "Builds uberjar, installs it to local Maven repo, and deploys it to Clojars."
+  "Builds jar file, installs it to local Maven repo, and deploys it to Clojars."
   []
-  (comp (build-jar) (push-release)))
+  (comp (package) (install) (push-release)))
 
