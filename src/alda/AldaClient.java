@@ -18,7 +18,11 @@ import org.apache.commons.lang3.SystemUtils;
 
 public class AldaClient {
   public static String version() {
-    return Manifests.read("alda-version");
+    if (Manifests.exists("alda-version")) {
+      return Manifests.read("alda-version");
+    } else {
+      return "unknown / development version";
+    }
   }
 
   public static void updateAlda() throws URISyntaxException {
