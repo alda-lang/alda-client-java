@@ -39,9 +39,9 @@
 
   pom     {:project 'alda/client-java
            :version +version+
-           :description "A music programming language for musicians"
-           :url "https://github.com/alda-lang/alda"
-           :scm {:url "https://github.com/alda-lang/alda"}
+           :description "A Java command-line client for Alda"
+           :url "https://github.com/alda-lang/alda-client-java"
+           :scm {:url "https://github.com/alda-lang/alda-client-java"}
            :license {"name" "Eclipse Public License"
                      "url" "http://www.eclipse.org/legal/epl-v10.html"}}
 
