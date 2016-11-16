@@ -16,8 +16,6 @@
                   [com.beust/jcommander                 "1.48"]
                   [commons-io/commons-io                "2.5"]
                   [org.apache.commons/commons-lang3     "3.4"]
-                  ; probably don't need this dependency anymore
-                  [org.apache.httpcomponents/httpclient "4.5.1"]
                   [com.google.code.gson/gson            "2.6.1"]
                   [org.fusesource.jansi/jansi           "1.11"]
                   [us.bpsm/edn-java                     "0.4.6"]
