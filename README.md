@@ -24,6 +24,8 @@ To run the Alda client locally to test changes you've made to the code, you can 
 
     boot dev -x "args here"
 
+> This requires that you have the [Boot](http://boot-clj.com) build tool installed.
+
 The `-x` argument must be a single string containing everything you would put after `alda` when using a release build of the Alda client.
 
 For example, to test changes to the way the `alda play` command plays a file, you can run:
