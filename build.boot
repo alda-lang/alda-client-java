@@ -70,11 +70,7 @@
    running the resulting executable) is that the client does not have the
    necessary permissions to start a new process, e.g. to start an Alda server
    via the client."
-  [a app              APP     str  "The Alda application to run (server, repl or client)."
-   x args             ARGS    str  "The string of CLI args to pass to the client."
-   p port             PORT    int  "The port on which to start the server/worker."
-   w workers          WORKERS int  "The number of workers for the server to start."
-   F alda-fingerprint         bool "Allow the Alda client to identify this as an Alda process."]
+  [x args ARGS str "The string of CLI args to pass to the client." ]
   (comp
     (javac)
     (with-pass-thru fs
