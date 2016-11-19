@@ -1,22 +1,26 @@
 (set-env!
   :source-paths #{"src"}
   :dependencies '[; dev
-                  [adzerk/bootlaces "0.1.13" :scope "test"]
-                  [adzerk/boot-test "1.0.4"  :scope "test"]
-                  [str-to-argv      "0.1.0"  :score "test"]
+                  [adzerk/bootlaces      "0.1.13" :scope "test"]
+                  [adzerk/boot-test      "1.0.4"  :scope "test"]
+                  [str-to-argv           "0.1.0"  :scope "test"]
+                  ; needed in order to run the "alda repl" command in dev
+                  [alda/core             "0.0.1"  :scope "test"]
+                  [alda/sound-engine-clj "0.0.1"  :scope "test"]
+                  [alda/repl-clj         "0.0.1"  :scope "test"]
 
                   ; silence slf4j logging dammit
-                  [org.slf4j/slf4j-nop        "1.7.21"]
+                  [org.slf4j/slf4j-nop              "1.7.21"]
 
                   ; client
-                  [com.beust/jcommander                 "1.48"]
-                  [commons-io/commons-io                "2.5"]
-                  [org.apache.commons/commons-lang3     "3.4"]
-                  [com.google.code.gson/gson            "2.6.1"]
-                  [org.fusesource.jansi/jansi           "1.11"]
-                  [us.bpsm/edn-java                     "0.4.6"]
-                  [com.jcabi/jcabi-manifests            "1.1"]
-                  [org.zeromq/jeromq                    "0.3.5"]])
+                  [com.beust/jcommander             "1.48"]
+                  [commons-io/commons-io            "2.5"]
+                  [org.apache.commons/commons-lang3 "3.4"]
+                  [com.google.code.gson/gson        "2.6.1"]
+                  [org.fusesource.jansi/jansi       "1.11"]
+                  [us.bpsm/edn-java                 "0.4.6"]
+                  [com.jcabi/jcabi-manifests        "1.1"]
+                  [org.zeromq/jeromq                "0.3.5"]])
 
 (require '[adzerk.bootlaces :refer :all])
 
