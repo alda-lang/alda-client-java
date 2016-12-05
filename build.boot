@@ -5,7 +5,7 @@
                   [adzerk/boot-test      "1.1.2"  :scope "test"]
                   [str-to-argv           "0.1.0"  :scope "test"]
                   ; needed in order to run the "alda repl" command in dev
-                  [alda/core             "0.1.1"  :scope "test"]
+                  [alda/core             "0.1.2"  :scope "test"]
                   [alda/sound-engine-clj "0.1.0"  :scope "test"]
                   [alda/repl-clj         "0.1.0"  :scope "test"]
 
