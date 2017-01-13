@@ -17,13 +17,8 @@ public class AldaRequest {
     }
     return zContext;
   }
-
-  private static Socket dealerSocket = null;
-  public static Socket getDealerSocket() {
-    if (dealerSocket == null) {
-      dealerSocket = getZContext().createSocket(ZMQ.DEALER);
-    }
-    return dealerSocket;
+  private Socket getDealerSocket() {
+    return getZContext().createSocket(ZMQ.DEALER);
   }
 
   private final static int REQUEST_TIMEOUT = 2500; //  ms
