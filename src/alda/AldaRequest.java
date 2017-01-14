@@ -9,6 +9,8 @@ import org.zeromq.ZMQ.PollItem;
 import org.zeromq.ZMQ.Poller;
 import org.zeromq.ZMQ.Socket;
 
+
+
 public class AldaRequest {
   private static ZContext zContext = null;
   public static ZContext getZContext() {
@@ -18,12 +20,25 @@ public class AldaRequest {
     return zContext;
   }
 
-  private static Socket dealerSocket = null;
-  public static Socket getDealerSocket() {
-    if (dealerSocket == null) {
-      dealerSocket = getZContext().createSocket(ZMQ.DEALER);
+  private Socket getDealerSocket() {
+    Socket socket = findExistingSocketForHostAndPort(this.host, this.port);
+    if (socket != null){
+      return socket;
     }
-    return dealerSocket;
+    return getZContext().createSocket(ZMQ.DEALER);
+  }
+
+  private Socket findExistingSocketForHostAndPort(String host, int port) {
+    String endpoint = host.replace("localhost", "127.0.0.1")+":"+port;
+
+    for (Socket socket: getZContext().getSockets()){
+      Object lastEndpoint = socket.base().getsockoptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT);
+      if (lastEndpoint != null && endpoint.equals(lastEndpoint.toString())) {
+          return socket;
+      }
+
+    }
+    return null;
   }
 
   private final static int REQUEST_TIMEOUT = 2500; //  ms

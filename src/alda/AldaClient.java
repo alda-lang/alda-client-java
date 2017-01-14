@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Scanner;
@@ -91,57 +92,13 @@ public class AldaClient {
     System.out.println("If you have any currently running servers, you may want to restart them so that they are running the latest version.");
   }
 
-  public static ArrayList<AldaProcess> findProcesses() throws IOException {
-    ArrayList<AldaProcess> processes = new ArrayList<AldaProcess>();
 
-    Process p = Runtime.getRuntime().exec("ps -e");
-    InputStreamReader isr = new InputStreamReader(p.getInputStream());
-    BufferedReader input = new BufferedReader(isr);
-    String line;
-    while ((line = input.readLine()) != null) {
-      if (line.contains("alda-fingerprint")) {
-        AldaProcess process = new AldaProcess();
-
-        Matcher a = Pattern.compile("^\\s*(\\d+).*").matcher(line);
-        Matcher b = Pattern.compile(".*--port (\\d+).*").matcher(line);
-        Matcher c = Pattern.compile(".* server.*").matcher(line);
-        Matcher d = Pattern.compile(".* worker.*").matcher(line);
-        if (a.find()) {
-          process.pid = Integer.parseInt(a.group(1));
-          if (b.find()) {
-            process.port = Integer.parseInt(b.group(1));
-          } else {
-            process.port = -1;
-          }
-
-          if (c.find()) {
-            process.type = "server";
-          }
-
-          if (d.find()) {
-            process.type = "worker";
-          }
-        }
-
-        processes.add(process);
-      }
-    }
-    input.close();
-    p.getInputStream().close();
-    p.getOutputStream().close();
-    p.getErrorStream().close();
-    p.destroy();
-    return processes;
-  }
 
   public static void listProcesses(int timeout) throws IOException {
-    if (!SystemUtils.IS_OS_UNIX) {
-      System.out.println("Sorry -- listing running processes is not " +
-                         "currently supported for Windows users.");
-      return;
-    }
 
-    ArrayList<AldaProcess> processes = findProcesses();
+    IAldaProcessReader processReader = getProcessReader();
+    List<AldaProcess> processes = processReader.getProcesses();
+
     for (AldaProcess process : processes) {
       if (process.type == "server") {
         if (process.port == -1) {
@@ -178,8 +135,19 @@ public class AldaClient {
     }
   }
 
+  private static IAldaProcessReader getProcessReader() {
+
+    if (SystemUtils.IS_OS_WINDOWS) {
+      return new AldaProcessReaderWindows();
+    } else {
+      return new AldaProcessReaderUnix();
+    }
+  }
+
   public static boolean checkForExistingServer(int port) throws IOException {
-    ArrayList<AldaProcess> processes = findProcesses();
+    IAldaProcessReader processReader = getProcessReader();
+    List<AldaProcess> processes = processReader.getProcesses();
+
     for (AldaProcess process : processes) {
       if (process.port == port) {
         return true;
