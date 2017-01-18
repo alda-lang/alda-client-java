@@ -85,4 +85,12 @@ public class AldaClientTest {
         return workersFound;
     }
 
+    @Test
+    public void testCheckForExistingServer() throws Exception {
+        for(AldaServerInfo server: TestEnvironment.getRunningServers()) {
+            assertTrue("Alda Client didn't detect running server.", AldaClient.checkForExistingServer(server.getPort()) );
+        }
+        assertFalse("Alda Client detects running Server on a port where there should be none. ",AldaClient.checkForExistingServer(TestEnvironment.NO_SERVER_RUNNING_PORT));
+    }
+
 }
