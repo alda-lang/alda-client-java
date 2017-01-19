@@ -12,6 +12,10 @@ public class AldaServerInfo {
         this.numberOfWorkers = numberOfWorkers;
     }
 
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     public int getPort() {
         return port;
     }

@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestEnvironment {
 
@@ -12,18 +14,21 @@ public class TestEnvironment {
     private static List<AldaServerInfo> RUNNING_SERVERS;
     private static final String ALDA_EXECUTABLE = "test/resources/client/alda";
 
-    public static int NO_SERVER_RUNNING_PORT = 27716;
+    public static int NO_SERVER_RUNNING_PORT;
 
     public static void setUp() throws Exception {
 
         STATUS = TestEnvironmentStatus.STARTING;
 
+        NO_SERVER_RUNNING_PORT = findOpenPort();
+
         // Start 2 Servers with different number of workers
         RUNNING_SERVERS  = new ArrayList<>(2);
-        RUNNING_SERVERS.add(new AldaServerInfo("localhost", NO_SERVER_RUNNING_PORT+1, 2));
-        RUNNING_SERVERS.add(new AldaServerInfo("localhost", NO_SERVER_RUNNING_PORT+2, 1));
+        RUNNING_SERVERS.add(new AldaServerInfo("localhost", 0, 2));
+        RUNNING_SERVERS.add(new AldaServerInfo("localhost", 0, 1));
 
         for (AldaServerInfo srv: RUNNING_SERVERS){
+            srv.setPort(findOpenPort());
             // We are also checking for correct number of workers, so stop possible running instances
             TestEnvironment.stopAldaServer(srv.getPort());
             // start server on port with number of workers
@@ -73,5 +78,11 @@ public class TestEnvironment {
         }
     }
 
+    public static int findOpenPort() throws IOException {
+        ServerSocket tmpSocket = new ServerSocket(0);
+        int portNumber = tmpSocket.getLocalPort();
+        tmpSocket.close();
+        return portNumber;
+    }
 
 }
