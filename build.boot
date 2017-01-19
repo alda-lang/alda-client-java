@@ -52,9 +52,7 @@
 
   install {:pom "alda/client-java"}
 
-  target  {:dir #{"target"}}
-
-  junit {:packages '#{alda.testsuites}})
+  target  {:dir #{"target"}})
 
 (deftask test
   "Compile and run jUnit tests."
