@@ -4,6 +4,7 @@ import alda.AldaClient;
 import alda.testutils.AldaServerInfo;
 import alda.testutils.TestEnvironment;
 import alda.testutils.TestEnvironmentStatus;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -21,10 +22,15 @@ public class AldaClientTest {
     private final ByteArrayOutputStream stdOutContent = new ByteArrayOutputStream();
 
     @BeforeClass
-    public static void checkTestEnvironment() {
+    public static void checkTestEnvironment() throws Exception {
         if (TestEnvironment.getStatus() == TestEnvironmentStatus.STOPPED){
-            fail("This test class should be started via the IntegrationTestsSuite which takes care of starting and stopping the TestEnvironment.");
+            TestEnvironment.setUp();
         }
+    }
+
+    @AfterClass
+    public static void tearDown() throws Exception {
+        TestEnvironment.tearDown();
     }
 
     @Test
