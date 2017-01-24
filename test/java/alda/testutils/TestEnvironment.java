@@ -1,25 +1,26 @@
 package alda.testutils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestEnvironment {
 
+    private static final String ALDA_EXEC_ENVIRONMENT_VAR = "ALDA_EXECUTABLE";
+    private static final String ALDA_EXEC_INSTALL_PATH_UNIX = "/usr/local/bin/alda";
+    private static final String ALDA_EXEC_FALLBACK = "test/resources/server/alda";
+
     private static TestEnvironmentStatus STATUS = TestEnvironmentStatus.STOPPED;
     private static List<AldaServerInfo> RUNNING_SERVERS;
-    private static final String ALDA_EXECUTABLE = "test/resources/client/alda";
-
+    private static String ALDA_EXECUTABLE;
     public static int NO_SERVER_RUNNING_PORT;
 
     public static void setUp() throws Exception {
 
         STATUS = TestEnvironmentStatus.STARTING;
 
+        ALDA_EXECUTABLE = findAldaExecutable();
         NO_SERVER_RUNNING_PORT = findOpenPort();
 
         // Start 2 Servers with different number of workers
@@ -39,6 +40,21 @@ public class TestEnvironment {
         TestEnvironment.stopAldaServer(NO_SERVER_RUNNING_PORT);
 
         STATUS = TestEnvironmentStatus.STARTED;
+    }
+
+    private static String findAldaExecutable() {
+
+        // 1. check environment variable
+        if (System.getenv(ALDA_EXEC_ENVIRONMENT_VAR) != null) {
+            return System.getenv(ALDA_EXEC_ENVIRONMENT_VAR);
+        }
+        // 2. check default alda *nix install path
+        if (new File(ALDA_EXEC_INSTALL_PATH_UNIX).exists()){
+            return ALDA_EXEC_INSTALL_PATH_UNIX;
+        }
+
+        // 3. default fallback
+        return ALDA_EXEC_FALLBACK;
     }
 
     public static void tearDown() throws Exception {
