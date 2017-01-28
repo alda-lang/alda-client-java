@@ -236,7 +236,8 @@ public class Main {
 
         case "repl":
           handleCommandSpecificHelp(jc, "repl", repl);
-          server.startRepl();
+          AldaRepl javaRepl = new AldaRepl(server);
+          javaRepl.run();
           break;
 
         case "up":
