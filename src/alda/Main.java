@@ -103,6 +103,10 @@ public class Main {
                description = "Supply Alda code as a string")
     public String code;
 
+    @Parameter(names = {"-i", "--history"},
+               description = "Alda code that can be referenced but will not be played")
+    public String history = "";
+
     @Parameter(names = {"-F", "--from"},
                description = "A time marking or marker from which to start " +
                              "playback")
@@ -281,7 +285,7 @@ public class Main {
               server.play(play.file, play.from, play.to);
               break;
             case "code":
-              server.play(play.code, play.from, play.to);
+              server.play(play.code, play.history, play.from, play.to);
               break;
             case "stdin":
               server.play(Util.getStdIn(), play.from, play.to);
