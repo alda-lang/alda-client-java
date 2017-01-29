@@ -239,6 +239,11 @@ public class AldaServer extends AldaProcess {
   }
 
   public void play(String code, String from, String to)
+    throws NoResponseException{
+    play(code, null, from, to);
+  }
+
+  public void play(String code, String history, String from, String to)
     throws NoResponseException {
 
     AldaRequest req = new AldaRequest(this.host, this.port);
@@ -251,6 +256,11 @@ public class AldaServer extends AldaProcess {
     if (to != null) {
       req.options.to = to;
     }
+
+    if (history != null) {
+      req.options.history = history;
+    }
+
     // play requests need to be sent exactly once and not retried, otherwise
     // the score could be played more than once.
     //
