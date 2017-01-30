@@ -21,7 +21,8 @@
                   [org.fusesource.jansi/jansi       "1.11"]
                   [us.bpsm/edn-java                 "0.4.6"]
                   [com.jcabi/jcabi-manifests        "1.1"]
-                  [org.zeromq/jeromq                "0.3.5"]])
+                  [org.zeromq/jeromq                "0.3.5"]
+                  [jline                            "2.12.1"]])
 
 (require '[adzerk.bootlaces         :refer :all]
          '[radicalzephyr.boot-junit :refer (junit)])
@@ -115,4 +116,3 @@
   "Builds jar file, installs it to local Maven repo, and deploys it to Clojars."
   []
   (comp (package) (install) (push-release)))
-

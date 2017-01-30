@@ -236,7 +236,7 @@ public class Main {
 
         case "repl":
           handleCommandSpecificHelp(jc, "repl", repl);
-          AldaRepl javaRepl = new AldaRepl(server);
+          AldaRepl javaRepl = new AldaRepl(server, globalOpts.verbose);
           javaRepl.run();
           break;
 
