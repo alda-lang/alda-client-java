@@ -1,4 +1,6 @@
 
+// TODO TODO TODO (note to self) figure out why sending garbage values in from/to arguments makes a worker parse history
+
 package alda.repl;
 
 import java.io.IOException;
@@ -40,6 +42,7 @@ public class AldaRepl {
 
   public AldaRepl(AldaServer server, boolean verbose) {
     this.server = server;
+    server.setQuiet(true);
     this.verbose = verbose;
     history = new StringBuffer();
     manager = new ReplCommandManager();
@@ -50,7 +53,6 @@ public class AldaRepl {
       e.printStackTrace();
       System.exit(1);
     }
-
     AnsiConsole.systemInstall();
   }
 
@@ -92,28 +94,41 @@ public class AldaRepl {
         System.exit(1);
       }
 
+      // Check for quick quit keywords
+      if (input.matches("^:?(quit|exit|bye).*")) {
+        // Let the master quit function handle this.
+        input = ":quit";
+      }
+
       // check for :keywords and act on them
       if (input.charAt(0) == ':') {
         // throw away ':'
         input = input.substring(1);
         String[] splitString = input.split("\\s", 2);
         ReplCommand cmd = manager.get(splitString[0]);
+
+        if (cmd != null) {
+          String arguments = splitString.length > 1 ? splitString[1] : "";
+          // Run the command
+          cmd.act(arguments.trim(), history, server);
+        } else {
+          System.err.println("No command '" + splitString[0] + "' was found");
+        }
       } else {
         try {
-          // TODO get all playing errors to come up here via exceptions.
-          server.play(input, history.toString(), null, null);
+          // Play the stuff we just got, with history as context
+          server.play(input, history.toString(), null, null, false);
+
+          // If we have no exceptions, add to history
+          history.append(input);
+          history.append("\n");
         } catch (Throwable e) {
           server.error(e.getMessage());
           if (verbose) {
             System.out.println();
             e.printStackTrace();
           }
-          System.exit(1);
         }
-
-        // Add to history
-        history.append(input);
-        history.append("\n");
       }
     }
   }

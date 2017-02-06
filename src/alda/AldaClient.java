@@ -109,7 +109,7 @@ public class AldaClient {
           AldaServer server = new AldaServer("localhost",
                                              process.port,
                                              timeout,
-                                             false);
+                                             false, false);
           server.status();
         }
       } else if (process.type == "worker") {

@@ -16,11 +16,12 @@ public class AldaServer extends AldaProcess {
   private static int STARTUP_RETRY_INTERVAL = 250; // ms
   private static int PLAY_STATUS_INTERVAL = 250; // ms
 
-  public AldaServer(String host, int port, int timeout, boolean verbose) {
+  public AldaServer(String host, int port, int timeout, boolean verbose, boolean quiet) {
     this.host = normalizeHost(host);
     this.port = port;
     this.timeout = timeout;
     this.verbose = verbose;
+    this.quiet = quiet;
 
     AnsiConsole.systemInstall();
   }
@@ -44,7 +45,14 @@ public class AldaServer extends AldaProcess {
     }
   }
 
+  public void setQuiet(boolean q) {
+    this.quiet = q;
+  }
+
   public void msg(String message) {
+    if (quiet)
+      return;
+
     String hostWithoutProtocol = host.replaceAll("tcp://", "");
 
     String prefix;
@@ -65,7 +73,11 @@ public class AldaServer extends AldaProcess {
 
   public void error(String message) {
     String prefix = ansi().fg(RED).a("ERROR ").reset().toString();
+    // save and restore quiet value to print out errors
+    boolean oldQuiet = quiet;
+    quiet = false;
     msg(prefix + message);
+    quiet = oldQuiet;
   }
 
   private final String CHECKMARK = "\u2713";
@@ -245,6 +257,11 @@ public class AldaServer extends AldaProcess {
 
   public void play(String code, String history, String from, String to)
     throws NoResponseException {
+    play(code, history, from, to, true);
+  }
+
+  public void play(String code, String history, String from, String to, boolean catchExceptions)
+    throws NoResponseException {
 
     AldaRequest req = new AldaRequest(this.host, this.port);
     req.command = "play";
@@ -270,12 +287,18 @@ public class AldaServer extends AldaProcess {
     AldaResponse res = req.send(3000, 0);
 
     if (!res.success) {
-      error(res.body);
+      if (catchExceptions)
+        error(res.body);
+      else
+        throw new ServerRuntimeError(res.body);
       return;
     }
 
     if (res.workerAddress == null) {
-      error("No worker address included in response; unable to check for status.");
+      if (catchExceptions)
+        error("No worker address included in response; unable to check for status.");
+      else
+        throw new ServerRuntimeError("No worker address included in response; unable to check for status.");
       return;
     }
 
@@ -284,7 +307,10 @@ public class AldaServer extends AldaProcess {
     while (true) {
       AldaResponse update = playStatus(res.workerAddress);
       if (!update.success) {
-        error(update.body);
+        if (catchExceptions)
+          error(update.body);
+        else
+          throw new ServerRuntimeError(update.body);
         break;
       } else if (!update.body.equals(status)) {
         status = update.body;

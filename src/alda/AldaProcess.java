@@ -9,6 +9,7 @@ public class AldaProcess {
   private static int STARTUP_RETRY_INTERVAL = 250; // ms
 
   public boolean verbose = false;
+  public boolean quiet = false;
   public String host;
   public int pid;
   public int port;

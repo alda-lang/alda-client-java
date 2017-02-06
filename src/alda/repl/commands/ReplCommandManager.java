@@ -1,9 +1,9 @@
 
-
 package alda.repl.commands;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 
 import alda.AldaServer;
 
@@ -15,8 +15,11 @@ public class ReplCommandManager {
     commands = new HashMap<>();
 
     // Temp array to store commands so we can iterate over them later
-    ReplCommand[] cmds = {new ReplHelp(this),
-                          new ReplScore()};
+    ReplCommand[] cmds = {new ReplPlay(),
+                          new ReplNew(),
+                          new ReplQuit(),
+                          new ReplScore(),
+                          new ReplHelp(this)};
 
     for (ReplCommand c : cmds) {
       commands.put(c.key(), c);
@@ -26,34 +29,143 @@ public class ReplCommandManager {
   /**
    * Returns the ReplCommand that corresponds to this key
    * @param key the key to key into
-   * @return the repl command key corresponds to. 
+   * @return the repl command key corresponds to.
    * null if no command corresponds to key
    */
   public ReplCommand get(String key) {
     return commands.getOrDefault(key, null);
   }
 
-  // List of commands, represented as classes
-  private class ReplScore implements ReplCommand {
+  /**
+   * Gets a collection of all ReplCommands Available
+   * @return A collection of all the commands we know about
+   */
+  public Collection<ReplCommand> values() {
+    return commands.values();
+  }
+
+  //*************************List of Commands***********************************
+  private class ReplPlay implements ReplCommand {
+    private void usage() {
+      System.err.println(docDetails());
+    }
+    @Override
     public void act(String args, StringBuffer history, AldaServer server) {
-      return;
-    }
+      // Parse from/to args
+      String[] arguments = args.split("\\s+");
+      String from = "";
+      String to = "";
 
-    public String docstring() {
-      return "Prints the score";
-    }
+      System.out.println(arguments.length);
+      if (arguments.length > 0) {
+        for (int i = 0; i < arguments.length; i++) {
+          if (arguments[i].equals("from")) {
+            // process from argument
+            if (++i >= arguments.length) {
+              usage();
+              return;
+            }
+            from = arguments[i];
+          } else if (arguments[i].equals("to")) {
+            // process to argument
+            if (++i >= arguments.length) {
+              usage();
+              return;
+            }
+            to = arguments[i];
+          } else {
+            usage();
+            return;
+          }
+        }
+      }
 
+      try {
+        server.play(history.toString(), "",
+                    from.length() > 0 ? from : null,
+                    to.length() > 0 ? to : null, false);
+      } catch (Throwable e) {
+        server.error(e.getMessage());
+      }
+    }
+    @Override
+    public String docSummary() {
+      return "Plays the current score.";
+    }
+    @Override
+    public String docDetails() {
+      return "Can take optional `from` and `to` arguments, in the form of markers or mm:ss times.\n\n" +
+        "Without arguments, will play the entire score from beginning to end.\n\n" +
+        "Example usage:\n\n" +
+        "  :play\n" +
+        "  :play from 0:05\n" +
+        "  :play to 0:10\n" +
+        "  :play from 0:05 to 0:10\n" +
+        "  :play from guitarIn\n" +
+        "  :play to verse\n" +
+        "  :play from verse to bridge";
+    }
+    @Override
+    public String key() {
+      return "play";
+    }
+  }
+
+  private class ReplNew implements ReplCommand {
+    @Override
+    public void act(String args, StringBuffer history, AldaServer server) {
+      history.delete(0, history.length());
+    }
+    @Override
+    public String docSummary() {
+      return "Creates a new score.";
+    }
+    @Override
+    public String key() {
+      return "new";
+    }
+  }
+
+  private class ReplQuit implements ReplCommand {
+    @Override
+    public void act(String args, StringBuffer history, AldaServer server) {
+      // Bye! =)
+      System.exit(0);
+    }
+    @Override
+    public String docSummary() {
+      return "Exits the Alda REPL session.";
+    }
+    @Override
+    public String key() {
+      return "quit";
+    }
+  }
+
+  private class ReplScore implements ReplCommand {
+    @Override
+    public void act(String args, StringBuffer history, AldaServer server) {
+      System.out.println(history.toString().trim());
+    }
+    @Override
+    public String docSummary() {
+      return "Prints the score (as Alda code).";
+    }
+    @Override
     public String key() {
       return "score";
     }
   }
-  
+
+  // Class that handles :help commands
   private class ReplHelp implements ReplCommand {
 
     private ReplCommandManager cmdManager;
 
-    public static final String NO_DOCSTRING
-      = "No documentation was found for this command.";
+    public static final String HELP_HEADER
+      = "For commands marked with (*), more detailed information about the command is available via the :help command.\n\n" +
+      "e.g. :help play\n\n" +
+      "Available commands:\n";
 
     public ReplHelp(ReplCommandManager m) {
       cmdManager = m;
@@ -61,22 +173,49 @@ public class ReplCommandManager {
 
     public void act(String args, StringBuffer history, AldaServer server) {
       args = args.trim();
+
+      // Print out default help info
+      if (args.length() == 0) {
+        System.out.println(HELP_HEADER);
+        for (ReplCommand c : cmdManager.values()) {
+          System.out.println("    :" + c.key() + "\t" + c.docSummary()
+                             + (c.docDetails() != "" ? " (*)" : ""));
+        }
+        return;
+      }
+
+      // Print out specialized help info like ':help help'
       ReplCommand cmd = cmdManager.get(args);
       if (cmd != null) {
-        System.out.println(cmd.docstring());
+        System.out.println(cmd.docSummary());
+        if (cmd.docDetails() != "") {
+          System.out.println();
+          for (String line : cmd.docDetails().split("\n")) {
+            System.out.println("   " + line);
+          }
+        }
       } else {
-        System.err.println(NO_DOCSTRING);
+        System.err.println("No documentation was found for '" + args + "'.");
       }
       return;
     }
 
-    public String docstring() {
-      return "The command that gives you help";
+    @Override
+    public String docSummary() {
+      return "Display this help text.";
     }
 
+    @Override
+    public String docDetails() {
+      return "Usage:\n\n" +
+        "  :help help\n" +
+        "  :help new";
+    }
+
+    @Override
     public String key() {
       return "help";
     }
   }
-
+  //****************************************************************************
 }

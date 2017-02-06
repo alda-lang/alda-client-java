@@ -5,7 +5,7 @@ import alda.AldaServer;
 
 /**
  * A interface that represents a ReplCommand
- * 
+ *
  * A repl command is a explicit command that the client must process itself
  * such as :help, :load, or :play
  */
@@ -22,11 +22,20 @@ public interface ReplCommand {
   public void act(String args, StringBuffer history, AldaServer server);
 
   /**
-   * Returns the docstring of this ReplCommand
-   * @return The docstring that correponds to this ReplCommand
+   * Returns the documentation summary of this ReplCommand
+   * @return The summary that correponds to this ReplCommand
    */
-  public default String docstring() {
-    return "Help is not available for this command."; 
+  public default String docSummary() {
+    return "Help is not available for this command.";
+  }
+
+  /**
+   * Returns the documentation details of this ReplCommand
+   * @return The details that correponds to this ReplCommand
+   * If no details are available, return empty string. (or just don't override)
+   */
+  public default String docDetails() {
+    return "";
   }
 
   /**

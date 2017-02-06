@@ -34,6 +34,10 @@ public class Main {
                description = "Enable verbose output")
     public boolean verbose = false;
 
+    @Parameter(names = {"-q", "--quiet"},
+               description = "Disable non-error messages")
+    public boolean quiet = false;
+
     @Parameter(names = {"-H", "--host"},
                description = "The hostname of the Alda server")
     public String host = "localhost";
@@ -198,7 +202,8 @@ public class Main {
     AldaServer server = new AldaServer(globalOpts.host,
                                        globalOpts.port,
                                        globalOpts.timeout,
-                                       globalOpts.verbose);
+                                       globalOpts.verbose,
+                                       globalOpts.quiet);
 
     try {
       if (globalOpts.help) {
