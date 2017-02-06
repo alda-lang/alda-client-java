@@ -1,5 +1,5 @@
 
-package alda;
+package alda.repl;
 
 import java.io.IOException;
 
@@ -10,6 +10,12 @@ import org.fusesource.jansi.AnsiConsole;
 import org.fusesource.jansi.Ansi.Color;
 import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
+
+import alda.AldaServer;
+import alda.AldaClient;
+
+import alda.repl.commands.ReplCommand;
+import alda.repl.commands.ReplCommandManager;
 
 public class AldaRepl {
   public static final String ASCII_ART  =
@@ -28,12 +34,15 @@ public class AldaRepl {
   private ConsoleReader r;
   private boolean verbose;
 
+  private ReplCommandManager manager;
+
   private StringBuffer history;
 
   public AldaRepl(AldaServer server, boolean verbose) {
     this.server = server;
     this.verbose = verbose;
     history = new StringBuffer();
+    manager = new ReplCommandManager();
     try {
       r = new ConsoleReader();
     } catch (IOException e) {
@@ -83,23 +92,29 @@ public class AldaRepl {
         System.exit(1);
       }
 
-      // TODO check for :keywords and act on them
-
-      try {
-        // TODO get all playing errors to come up here via exceptions.
-        server.play(input, history.toString(), null, null);
-      } catch (Throwable e) {
-        server.error(e.getMessage());
-        if (verbose) {
-          System.out.println();
-          e.printStackTrace();
+      // check for :keywords and act on them
+      if (input.charAt(0) == ':') {
+        // throw away ':'
+        input = input.substring(1);
+        String[] splitString = input.split("\\s", 2);
+        ReplCommand cmd = manager.get(splitString[0]);
+      } else {
+        try {
+          // TODO get all playing errors to come up here via exceptions.
+          server.play(input, history.toString(), null, null);
+        } catch (Throwable e) {
+          server.error(e.getMessage());
+          if (verbose) {
+            System.out.println();
+            e.printStackTrace();
+          }
+          System.exit(1);
         }
-        System.exit(1);
-      }
 
-      // Add to history
-      history.append(input);
-      history.append("\n");
+        // Add to history
+        history.append(input);
+        history.append("\n");
+      }
     }
   }
 }

@@ -8,6 +8,8 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParameterException;
 
+import alda.repl.AldaRepl;
+
 public class Main {
 
   public static class FileConverter implements IStringConverter<File> {

@@ -32,13 +32,13 @@
 (bootlaces! +version+)
 
 (task-options!
-  javac   {:options (let [jdk7-bootclasspath (System/getenv "JDK7_BOOTCLASSPATH")]
+  javac   {:options (let [jdk8-bootclasspath (System/getenv "JDK7_BOOTCLASSPATH")]
                       (concat
                         []
-                        (when-not (empty? jdk7-bootclasspath)
-                          ["-source" "1.7"
-                           "-target" "1.7"
-                           "-bootclasspath" jdk7-bootclasspath])))}
+                        (when-not (empty? jdk8-bootclasspath)
+                          ["-source" "1.8"
+                           "-target" "1.8"
+                           "-bootclasspath" jdk8-bootclasspath])))}
 
   pom     {:project 'alda/client-java
            :version +version+
