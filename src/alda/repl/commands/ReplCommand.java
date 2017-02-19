@@ -3,6 +3,8 @@ package alda.repl.commands;
 
 import alda.AldaServer;
 
+import jline.console.ConsoleReader;
+
 /**
  * A interface that represents a ReplCommand
  *
@@ -18,8 +20,9 @@ public interface ReplCommand {
    * @param args The arguments to this repl command
    * @param history The current history string for this repl
    * @param server The server to play pull data from, if needed.
+   * @param reader A consoleReader so this command can prompt for user input
    */
-  public void act(String args, StringBuffer history, AldaServer server);
+  public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader);
 
   /**
    * Returns the documentation summary of this ReplCommand

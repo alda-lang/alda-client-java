@@ -144,10 +144,10 @@ public class AldaRepl {
           // pass in empty string if we have no arguments
           String arguments = splitString.length > 1 ? splitString[1] : "";
           // Run the command
-          cmd.act(arguments.trim(), history, server);
+          cmd.act(arguments.trim(), history, server, r);
 
           // reset the prompt (history might have changed)
-          promptPrefix = genPromptPrefix(history);
+            promptPrefix = genPromptPrefix(input);
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
@@ -161,7 +161,9 @@ public class AldaRepl {
           history.append("\n");
 
           // If we're good, we should check to see if we reset the instrument
-          promptPrefix = genPromptPrefix(input);
+          String newPrefix = genPromptPrefix(history);
+          if (newPrefix.length() > 0)
+            promptPrefix = newPrefix;
         } catch (Throwable e) {
           server.error(e.getMessage());
           if (verbose) {

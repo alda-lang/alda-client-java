@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.stream.Stream;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
@@ -14,6 +15,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.FileAlreadyExistsException;
+
+import jline.console.ConsoleReader;
 
 import alda.AldaServer;
 
@@ -59,7 +62,7 @@ public class ReplCommandManager {
   //*************************List of Commands***********************************
   private class ReplPlay implements ReplCommand {
     @Override
-    public void act(String args, StringBuffer history, AldaServer server) {
+    public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
       // Parse from/to args
       String[] arguments = args.split("\\s+");
       String from = "";
@@ -120,18 +123,31 @@ public class ReplCommandManager {
   }
 
   private class ReplSave implements ReplCommand {
+    private String oldSaveFile = null;
     @Override
-    public void act(String args, StringBuffer history, AldaServer server) {
-      if (args == "") {
-        usage();
-        return;
-      }
+    public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
+      // Turn ~ into home
+      args = args.replaceFirst("^~",System.getProperty("user.home"));
       try {
+        if (args.length() == 0) {
+          if (oldSaveFile != null && oldSaveFile.length() != 0) {
+            // Overwrite by default if running :save
+            Files.write(Paths.get(oldSaveFile), history.toString().getBytes());
+          } else {
+            usage();
+          }
+          return;
+        }
+
         try {
           Files.write(Paths.get(args), history.toString().getBytes(), StandardOpenOption.CREATE_NEW);
+          oldSaveFile = args;
         } catch (FileAlreadyExistsException e) {
-          // TODO possibly determine a flag (or a new command) to allow overwrite
-          System.out.println("file '" + args + "' already exists. Aborting.");
+          String confirm = reader.readLine("File already present, overwrite? [y/n]: ");
+          if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
+            Files.write(Paths.get(args), history.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            oldSaveFile = args;
+          }
         }
       } catch (IOException|UncheckedIOException e) {
         e.printStackTrace();
@@ -146,7 +162,9 @@ public class ReplCommandManager {
     public String docDetails() {
       return "Usage:\n\n" +
         "  :save test/examples/bach_cello_suite_no_1.alda\n" +
-        "  :save /Users/rick/Scores/love_is_alright_tonite.alda";
+        "  :save ~/Scores/love_is_alright_tonite.alda\n\n" +
+        "Once :save has been executed once:\n" +
+        "  :save";
     }
     @Override
     public String key() {
@@ -156,7 +174,7 @@ public class ReplCommandManager {
 
   private class ReplLoad implements ReplCommand {
     @Override
-    public void act(String args, StringBuffer history, AldaServer server) {
+    public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
 
       if (args == "") {
         usage();
@@ -198,7 +216,7 @@ public class ReplCommandManager {
 
   private class ReplNew implements ReplCommand {
     @Override
-    public void act(String args, StringBuffer history, AldaServer server) {
+    public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
       history.delete(0, history.length());
     }
     @Override
@@ -213,7 +231,7 @@ public class ReplCommandManager {
 
   private class ReplQuit implements ReplCommand {
     @Override
-    public void act(String args, StringBuffer history, AldaServer server) {
+    public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
       // Bye! =)
       System.exit(0);
     }
@@ -229,7 +247,7 @@ public class ReplCommandManager {
 
   private class ReplScore implements ReplCommand {
     @Override
-    public void act(String args, StringBuffer history, AldaServer server) {
+    public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
       System.out.println(history.toString().trim());
     }
     @Override
@@ -257,7 +275,7 @@ public class ReplCommandManager {
       cmdManager = m;
     }
 
-    public void act(String args, StringBuffer history, AldaServer server) {
+    public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
       args = args.trim();
 
       // Print out default help info
