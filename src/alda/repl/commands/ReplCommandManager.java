@@ -20,6 +20,10 @@ import jline.console.ConsoleReader;
 
 import alda.AldaServer;
 
+/**
+ * Class to manage and store all ReplCommands.
+ * The ReplHelp objecct uses this to generate it's list of documentation.
+ */
 public class ReplCommandManager {
 
   private Map<String, ReplCommand> commands;

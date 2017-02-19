@@ -147,7 +147,7 @@ public class AldaRepl {
           cmd.act(arguments.trim(), history, server, r);
 
           // reset the prompt (history might have changed)
-            promptPrefix = genPromptPrefix(input);
+          promptPrefix = genPromptPrefix(input);
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
