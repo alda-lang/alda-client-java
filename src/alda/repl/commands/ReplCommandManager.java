@@ -11,6 +11,8 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.FileAlreadyExistsException;
 
 import alda.AldaServer;
 
@@ -27,6 +29,7 @@ public class ReplCommandManager {
                           new ReplQuit(),
                           new ReplScore(),
                           new ReplLoad(),
+                          new ReplSave(),
                           new ReplHelp(this)};
 
     for (ReplCommand c : cmds) {
@@ -112,6 +115,41 @@ public class ReplCommandManager {
     @Override
     public String key() {
       return "play";
+    }
+  }
+
+  private class ReplSave implements ReplCommand {
+    @Override
+    public void act(String args, StringBuffer history, AldaServer server) {
+      if (args == "") {
+        usage();
+        return;
+      }
+      try {
+        try {
+          Files.write(Paths.get(args), history.toString().getBytes(), StandardOpenOption.CREATE_NEW);
+        } catch (FileAlreadyExistsException e) {
+          // TODO possibly determine a flag (or a new command) to allow overwrite
+          System.out.println("file '" + args + "' already exists. Aborting.");
+        }
+      } catch (IOException|UncheckedIOException e) {
+        e.printStackTrace();
+        System.err.println("There was an error writing to '" + args + "'");
+      }
+    }
+    @Override
+    public String docSummary() {
+      return "Saves an the current REPL session into an Alda score.";
+    }
+    @Override
+    public String docDetails() {
+      return "Usage:\n\n" +
+        "  :save test/examples/bach_cello_suite_no_1.alda\n" +
+        "  :save /Users/rick/Scores/love_is_alright_tonite.alda";
+    }
+    @Override
+    public String key() {
+      return "save";
     }
   }
 
