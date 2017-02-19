@@ -88,7 +88,7 @@
                (into-array String
                  (str-to-argv/split-args (or ~args ""))))))))
 
-(deftask assert-jdk7-bootclasspath
+(deftask assert-jdk8-bootclasspath
   "Ensures that the JDK7_BOOTCLASSPATH environment variable is set, as required
    to compile a final jar file that supports Java 1.7+."
   []
@@ -106,7 +106,7 @@
 (deftask package
   "Builds jar file."
   []
-  (comp (assert-jdk7-bootclasspath)
+  (comp (assert-jdk8-bootclasspath)
         (javac)
         (pom)
         (jar)))

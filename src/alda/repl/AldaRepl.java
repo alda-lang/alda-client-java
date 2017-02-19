@@ -4,6 +4,8 @@
 package alda.repl;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -76,6 +78,23 @@ public class AldaRepl {
     return out;
   }
 
+  private static final Pattern promptPattern = Pattern.compile("[-a-z0-10]+:");
+  /**
+   * Generates the prompt prefix given a history/code buffer
+   * @param in The string to check for instrument: directives
+   */
+  private String genPromptPrefix(CharSequence in) {
+    if (in == null || in.length() == 0) {
+      return "";
+    }
+    Matcher result = promptPattern.matcher(in);
+    if (result.find()) {
+      String lastInstrument = result.group(result.groupCount());
+      return lastInstrument.charAt(0) + "";
+    }
+    return "";
+  }
+
   public void run() {
     System.out.println(ansi().fg(BLUE).a(ASCII_ART).reset());
     System.out.println(centerText(ASCII_WIDTH, AldaClient.version(), CYAN));
@@ -83,11 +102,13 @@ public class AldaRepl {
 
     System.out.println("\n" + ansi().fg(WHITE).bold().a(HELP_TEXT).reset() + "\n");
 
+    String promptPrefix = genPromptPrefix(null);
+
     while (true) {
       String input = "";
       try {
         // TODO add dynamic prompts based on the instrument
-        input = r.readLine(PROMPT);
+        input = r.readLine(promptPrefix + PROMPT);
       } catch (IOException e) {
         System.err.println("An error was detected when we tried to read a line.");
         e.printStackTrace();
@@ -124,6 +145,9 @@ public class AldaRepl {
           String arguments = splitString.length > 1 ? splitString[1] : "";
           // Run the command
           cmd.act(arguments.trim(), history, server);
+
+          // reset the prompt (history might have changed)
+          promptPrefix = genPromptPrefix(history);
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
@@ -135,6 +159,9 @@ public class AldaRepl {
           // If we have no exceptions, add to history
           history.append(input);
           history.append("\n");
+
+          // If we're good, we should check to see if we reset the instrument
+          promptPrefix = genPromptPrefix(input);
         } catch (Throwable e) {
           server.error(e.getMessage());
           if (verbose) {
