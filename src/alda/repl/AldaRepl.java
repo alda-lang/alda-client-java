@@ -94,8 +94,17 @@ public class AldaRepl {
         System.exit(1);
       }
 
-      // Check for quick quit keywords
-      if (input.matches("^:?(quit|exit|bye).*")) {
+      if (input.length() == 0) {
+        // Don't do anything if we get no input
+        continue;
+      }
+
+      // Check for quick quit keywords. input is null when we get EOF
+      if (input == null || input.matches("^:?(quit|exit|bye).*")) {
+        // If we got an EOF, we need to print a line, so we quit on a newline
+        if (input == null)
+          System.out.println();
+
         // Let the master quit function handle this.
         input = ":quit";
       }
@@ -104,10 +113,14 @@ public class AldaRepl {
       if (input.charAt(0) == ':') {
         // throw away ':'
         input = input.substring(1);
+
+        // This limits size of splitString to 2 elements.
+        // All arguments will be in splitString[1]
         String[] splitString = input.split("\\s", 2);
         ReplCommand cmd = manager.get(splitString[0]);
 
         if (cmd != null) {
+          // pass in empty string if we have no arguments
           String arguments = splitString.length > 1 ? splitString[1] : "";
           // Run the command
           cmd.act(arguments.trim(), history, server);

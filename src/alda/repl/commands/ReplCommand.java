@@ -39,6 +39,14 @@ public interface ReplCommand {
   }
 
   /**
+   * Prints usage information for this command.
+   * Useful when this command encounters an error
+   */
+  public default void usage() {
+    System.err.println(docDetails());
+  }
+
+  /**
    * Gets the key that triggers this command
    * @return the key to trigger, eg: 'help'
    */
