@@ -1,6 +1,4 @@
 
-// TODO TODO TODO (note to self) figure out why sending garbage values in from/to arguments makes a worker parse history
-
 package alda.repl;
 
 import java.io.IOException;
@@ -82,17 +80,21 @@ public class AldaRepl {
   /**
    * Generates the prompt prefix given a history/code buffer
    * @param in The string to check for instrument: directives
+   * @param defaultStr The default string to return if we can't find any matches
    */
-  private String genPromptPrefix(CharSequence in) {
+  private String genPromptPrefix(CharSequence in, CharSequence defaultStr) {
+    if (defaultStr == null)
+      defaultStr = "";
+
     if (in == null || in.length() == 0) {
-      return "";
+      return defaultStr.toString();
     }
     Matcher result = promptPattern.matcher(in);
     if (result.find()) {
       String lastInstrument = result.group(result.groupCount());
       return lastInstrument.charAt(0) + "";
     }
-    return "";
+    return defaultStr.toString();
   }
 
   public void run() {
@@ -102,7 +104,7 @@ public class AldaRepl {
 
     System.out.println("\n" + ansi().fg(WHITE).bold().a(HELP_TEXT).reset() + "\n");
 
-    String promptPrefix = genPromptPrefix(null);
+    String promptPrefix = genPromptPrefix(null, null);
 
     while (true) {
       String input = "";
@@ -147,7 +149,7 @@ public class AldaRepl {
           cmd.act(arguments.trim(), history, server, r);
 
           // reset the prompt (history might have changed)
-          promptPrefix = genPromptPrefix(input);
+          promptPrefix = genPromptPrefix(input, promptPrefix);
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
@@ -161,9 +163,7 @@ public class AldaRepl {
           history.append("\n");
 
           // If we're good, we should check to see if we reset the instrument
-          String newPrefix = genPromptPrefix(history);
-          if (newPrefix.length() > 0)
-            promptPrefix = newPrefix;
+          promptPrefix = genPromptPrefix(history, promptPrefix);
         } catch (Throwable e) {
           server.error(e.getMessage());
           if (verbose) {
