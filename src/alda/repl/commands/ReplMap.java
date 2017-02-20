@@ -13,15 +13,13 @@ public class ReplMap implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
     try {
-
       String mode = Util.scoreMode(false, true);
-      String res = server.parseRaw(history.toString(), mode);
+      String res = server.parseRaw(history.toString(), mode, false);
       // TODO format this string to be pretty!
       System.out.println(res);
-    } catch (Exception e) {
-      e.printStackTrace();
+    } catch (Throwable e) {
+      server.error(e.getMessage());
     }
-    // System.out.println(result);
   }
   @Override
   public String docSummary() {

@@ -13,6 +13,7 @@ import java.io.UncheckedIOException;
 import java.util.stream.Stream;
 
 import alda.AldaServer;
+import alda.Util;
 import jline.console.ConsoleReader;
 
 /**
@@ -22,12 +23,13 @@ import jline.console.ConsoleReader;
 public class ReplLoad implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
-
     if (args == "") {
       usage();
       return;
     }
     Stream<String> fLines = null;
+    boolean error = false;
+
     try {
       fLines = Files.lines(Paths.get(args));
       StringBuffer newHistory = new StringBuffer();
@@ -35,9 +37,21 @@ public class ReplLoad implements ReplCommand {
           newHistory.append(x);
           newHistory.append("\n");
         });
-      history.delete(0, history.length());
-      history.append(newHistory);
-      // TODO check to see if score is valid by sending it to server (maybe with :to 0:00)
+
+      // Check if the score we just loaded is valid (prevent further errors)
+      try {
+        String mode = Util.scoreMode(false, true);
+        String res = server.parseRaw(newHistory.toString(), mode, false);
+      } catch (Throwable e) {
+        server.error(e.getMessage());
+        // Don't change 'history'
+        error = true;
+      }
+
+      if (!error) {
+        history.delete(0, history.length());
+        history.append(newHistory);
+      }
     } catch (IOException|UncheckedIOException e) {
       System.err.println("There was an error reading '" + args + "'");
     } finally {

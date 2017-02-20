@@ -354,7 +354,7 @@ public class AldaServer extends AldaProcess {
    * Raw parsing function
    * @return Returns the result of the parse, or null if the parse failed (and no exception was thrown)
    */
-  public String parseRaw(String code, String mode) throws NoResponseException {
+  public String parseRaw(String code, String mode, boolean parseExceptions) throws NoResponseException {
     AldaRequest req = new AldaRequest(this.host, this.port);
     req.command = "parse";
     req.body = code;
@@ -365,13 +365,13 @@ public class AldaServer extends AldaProcess {
     if (res.success) {
       return res.body;
     } else {
-      error(res.body);
+      error(res.body, parseExceptions);
       return null;
     }
   }
 
   public void parse(String code, String mode) throws NoResponseException {
-    String res = parseRaw(code, mode);
+    String res = parseRaw(code, mode, true);
     if (res != null) {
       System.out.println(res);
     }
