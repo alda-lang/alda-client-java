@@ -26,6 +26,7 @@ public class ReplCommandManager {
                           new ReplNew(),
                           new ReplQuit(),
                           new ReplScore(),
+                          new ReplMap(),
                           new ReplLoad(),
                           new ReplSave(),
                           new ReplHelp(this)};
