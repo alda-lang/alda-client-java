@@ -90,9 +90,13 @@ public class AldaRepl {
       return defaultStr.toString();
     }
     Matcher result = promptPattern.matcher(in);
-    if (result.find()) {
-      String lastInstrument = result.group(result.groupCount());
-      return lastInstrument.charAt(0) + "";
+    String match = null;
+
+    while (result.find()) {
+      match = result.group();
+    }
+    if (match != null) {
+      return match.charAt(0) + "";
     }
     return defaultStr.toString();
   }
@@ -149,7 +153,7 @@ public class AldaRepl {
           cmd.act(arguments.trim(), history, server, r);
 
           // reset the prompt (history might have changed)
-          promptPrefix = genPromptPrefix(input, promptPrefix);
+          promptPrefix = genPromptPrefix(history, promptPrefix);
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
@@ -163,7 +167,7 @@ public class AldaRepl {
           history.append("\n");
 
           // If we're good, we should check to see if we reset the instrument
-          promptPrefix = genPromptPrefix(history, promptPrefix);
+          promptPrefix = genPromptPrefix(input, promptPrefix);
         } catch (Throwable e) {
           server.error(e.getMessage());
           if (verbose) {
