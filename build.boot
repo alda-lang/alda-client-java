@@ -31,13 +31,8 @@
 (bootlaces! +version+)
 
 (task-options!
-  javac   {:options (let [jdk8-bootclasspath (System/getenv "JDK7_BOOTCLASSPATH")]
-                      (concat
-                        []
-                        (when-not (empty? jdk8-bootclasspath)
-                          ["-source" "1.8"
-                           "-target" "1.8"
-                           "-bootclasspath" jdk8-bootclasspath])))}
+ javac   {:options ["-source" "1.8"
+                    "-target" "1.8"]}
 
   pom     {:project 'alda/client-java
            :version +version+
@@ -88,26 +83,25 @@
                (into-array String
                  (str-to-argv/split-args (or ~args ""))))))))
 
-(deftask assert-jdk8-bootclasspath
-  "Ensures that the JDK7_BOOTCLASSPATH environment variable is set, as required
-   to compile a final jar file that supports Java 1.7+."
-  []
-  (with-pre-wrap fileset
-    (assert (not (empty? (System/getenv "JDK7_BOOTCLASSPATH")))
-            (str "Alda requires JDK7 in order to build its uberjar, in order "
-                 "to provide out-of-the-box support for users who may have "
-                 "older versions of Java. Please install JDK7 and set the "
-                 "environment variable JDK7_BOOTCLASSPATH to the path to your "
-                 "JDK7 classpath jar, e.g. (OS X example) "
-                 "/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/"
-                 "Home/jre/lib/rt.jar"))
-    fileset))
+;; (deftask assert-jdk7-bootclasspath
+;;   "Ensures that the JDK7_BOOTCLASSPATH environment variable is set, as required
+;;    to compile a final jar file that supports Java 1.7+."
+;;   []
+;;   (with-pre-wrap fileset
+;;     (assert (not (empty? (System/getenv "JDK7_BOOTCLASSPATH")))
+;;             (str "Alda requires JDK7 in order to build its uberjar, in order "
+;;                  "to provide out-of-the-box support for users who may have "
+;;                  "older versions of Java. Please install JDK7 and set the "
+;;                  "environment variable JDK7_BOOTCLASSPATH to the path to your "
+;;                  "JDK7 classpath jar, e.g. (OS X example) "
+;;                  "/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/"
+;;                  "Home/jre/lib/rt.jar"))
+;;     fileset))
 
 (deftask package
   "Builds jar file."
   []
-  (comp (assert-jdk8-bootclasspath)
-        (javac)
+  (comp (javac)
         (pom)
         (jar)))
 
