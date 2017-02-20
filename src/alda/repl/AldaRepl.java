@@ -115,11 +115,6 @@ public class AldaRepl {
         System.exit(1);
       }
 
-      if (input.length() == 0) {
-        // Don't do anything if we get no input
-        continue;
-      }
-
       // Check for quick quit keywords. input is null when we get EOF
       if (input == null || input.matches("^:?(quit|exit|bye).*")) {
         // If we got an EOF, we need to print a line, so we quit on a newline
@@ -128,6 +123,11 @@ public class AldaRepl {
 
         // Let the master quit function handle this.
         input = ":quit";
+      }
+
+      if (input.length() == 0) {
+        // Don't do anything if we get no input
+        continue;
       }
 
       // check for :keywords and act on them
