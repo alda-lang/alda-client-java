@@ -71,13 +71,21 @@ public class AldaServer extends AldaProcess {
     System.out.println(prefix + message);
   }
 
-  public void error(String message) {
-    String prefix = ansi().fg(RED).a("ERROR ").reset().toString();
-    // save and restore quiet value to print out errors
-    boolean oldQuiet = quiet;
-    quiet = false;
-    msg(prefix + message);
-    quiet = oldQuiet;
+  public void error(String msg) {
+    error(msg, true);
+  }
+
+  public void error(String message, boolean catchExceptions) {
+    if (!catchExceptions) {
+      throw new ServerRuntimeError(message);
+    } else {
+      String prefix = ansi().fg(RED).a("ERROR ").reset().toString();
+      // save and restore quiet value to print out errors
+      boolean oldQuiet = quiet;
+      quiet = false;
+      msg(prefix + message);
+      quiet = oldQuiet;
+    }
   }
 
   private final String CHECKMARK = "\u2713";
@@ -287,18 +295,12 @@ public class AldaServer extends AldaProcess {
     AldaResponse res = req.send(3000, 0);
 
     if (!res.success) {
-      if (catchExceptions)
-        error(res.body);
-      else
-        throw new ServerRuntimeError(res.body);
+      error(res.body, catchExceptions);
       return;
     }
 
     if (res.workerAddress == null) {
-      if (catchExceptions)
-        error("No worker address included in response; unable to check for status.");
-      else
-        throw new ServerRuntimeError("No worker address included in response; unable to check for status.");
+      error("No worker address included in response; unable to check for status.", catchExceptions);
       return;
     }
 
@@ -307,10 +309,7 @@ public class AldaServer extends AldaProcess {
     while (true) {
       AldaResponse update = playStatus(res.workerAddress);
       if (!update.success) {
-        if (catchExceptions)
-          error(update.body);
-        else
-          throw new ServerRuntimeError(update.body);
+        error(update.body, catchExceptions);
         break;
       } else if (!update.body.equals(status)) {
         status = update.body;
