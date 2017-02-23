@@ -1,6 +1,8 @@
 package alda;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 
 import com.jcabi.manifests.Manifests;
 
@@ -109,7 +111,7 @@ public class AldaClient {
           AldaServer server = new AldaServer("localhost",
                                              process.port,
                                              timeout,
-                                             false);
+                                             false, false);
           server.status();
         }
       } else if (process.type == "worker") {

@@ -8,6 +8,8 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParameterException;
 
+import alda.repl.AldaRepl;
+
 public class Main {
 
   public static class FileConverter implements IStringConverter<File> {
@@ -31,6 +33,10 @@ public class Main {
     @Parameter(names = {"-v", "--verbose"},
                description = "Enable verbose output")
     public boolean verbose = false;
+
+    @Parameter(names = {"-q", "--quiet"},
+               description = "Disable non-error messages")
+    public boolean quiet = false;
 
     @Parameter(names = {"-H", "--host"},
                description = "The hostname of the Alda server")
@@ -196,7 +202,8 @@ public class Main {
     AldaServer server = new AldaServer(globalOpts.host,
                                        globalOpts.port,
                                        globalOpts.timeout,
-                                       globalOpts.verbose);
+                                       globalOpts.verbose,
+                                       globalOpts.quiet);
 
     try {
       if (globalOpts.help) {
@@ -236,7 +243,8 @@ public class Main {
 
         case "repl":
           handleCommandSpecificHelp(jc, "repl", repl);
-          server.startRepl();
+          AldaRepl javaRepl = new AldaRepl(server, globalOpts.verbose);
+          javaRepl.run();
           break;
 
         case "up":
