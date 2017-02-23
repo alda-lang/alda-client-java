@@ -1,5 +1,9 @@
 package alda.repl.commands;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+
 import alda.AldaServer;
 import alda.Util;
 
@@ -15,8 +19,15 @@ public class ReplMap implements ReplCommand {
     try {
       String mode = Util.scoreMode(false, true);
       String res = server.parseRaw(history.toString(), mode, false);
-      // TODO format this string to be pretty!
-      System.out.println(res);
+
+      if (res != null) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonObject json = gson.fromJson(res, JsonObject.class);
+
+        System.out.println(gson.toJson(json));
+      } else {
+        System.err.println("An internal error occured when reading the map.");
+      }
     } catch (Throwable e) {
       server.error(e.getMessage());
     }
