@@ -9,8 +9,6 @@ import org.zeromq.ZMQ.PollItem;
 import org.zeromq.ZMQ.Poller;
 import org.zeromq.ZMQ.Socket;
 
-
-
 public class AldaRequest {
   private static ZContext zContext = null;
   public static ZContext getZContext() {
