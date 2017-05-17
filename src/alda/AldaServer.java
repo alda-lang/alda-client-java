@@ -166,6 +166,7 @@ public class AldaServer extends AldaProcess {
       try {
         Thread.sleep(STARTUP_RETRY_INTERVAL);
       } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
         System.out.println("Thread interrupted.");
         return;
       }
@@ -324,6 +325,7 @@ public class AldaServer extends AldaProcess {
         try {
           Thread.sleep(PLAY_STATUS_INTERVAL);
         } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
           System.out.println("Thread interrupted.");
         }
       } else {
