@@ -258,17 +258,27 @@ public class AldaServer extends AldaProcess {
     msg(serverVersion);
   }
 
-  public void play(String code, String from, String to)
+  public AldaResponse play(String code, String from, String to)
     throws NoResponseException{
-    play(code, null, from, to);
+    return play(code, null, from, to);
   }
 
-  public void play(String code, String history, String from, String to)
+  public AldaResponse play(String code, String history, String from, String to)
     throws NoResponseException {
-    play(code, history, from, to, true);
+    return play(code, history, from, to, true);
   }
 
-  public void play(String code, String history, String from, String to, boolean catchExceptions)
+  /**
+   * Tries to play a bit of alda code
+   *
+   * @param code The pimary code to play
+   * @param history The history context to supplement code
+   * @param from Time to play from
+   * @param to Time to stop playing
+   * @param catchExceptions Whether this method should catch it's exceptions
+   * @return The response from the play, with usefull information. Null if we encountered an error.
+   */
+  public AldaResponse play(String code, String history, String from, String to, boolean catchExceptions)
     throws NoResponseException {
 
     AldaRequest req = new AldaRequest(this.host, this.port);
@@ -296,12 +306,12 @@ public class AldaServer extends AldaProcess {
 
     if (!res.success) {
       error(res.body, catchExceptions);
-      return;
+      return null;
     }
 
     if (res.workerAddress == null) {
       error("No worker address included in response; unable to check for status.", catchExceptions);
-      return;
+      return null;
     }
 
     String status = "requested";
@@ -327,9 +337,12 @@ public class AldaServer extends AldaProcess {
           System.out.println("Thread interrupted.");
         }
       } else {
-        break;
+        // We succeded!
+        return update;
       }
     }
+    // We don't have anything to return,
+    return null;
   }
 
   public void play(File file, String from, String to)

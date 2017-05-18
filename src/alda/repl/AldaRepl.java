@@ -15,6 +15,7 @@ import static org.fusesource.jansi.Ansi.Color.*;
 
 import alda.AldaServer;
 import alda.AldaClient;
+import alda.AldaResponse;
 
 import alda.repl.commands.ReplCommand;
 import alda.repl.commands.ReplCommandManager;
@@ -76,31 +77,6 @@ public class AldaRepl {
     return out;
   }
 
-  private static final Pattern promptPattern = Pattern.compile("[-a-z0-10]+:");
-  /**
-   * Generates the prompt prefix given a history/code buffer
-   * @param in The string to check for instrument: directives
-   * @param defaultStr The default string to return if we can't find any matches
-   */
-  private String genPromptPrefix(CharSequence in, CharSequence defaultStr) {
-    if (defaultStr == null)
-      defaultStr = "";
-
-    if (in == null || in.length() == 0) {
-      return defaultStr.toString();
-    }
-    Matcher result = promptPattern.matcher(in);
-    String match = null;
-
-    while (result.find()) {
-      match = result.group();
-    }
-    if (match != null) {
-      return match.charAt(0) + "";
-    }
-    return defaultStr.toString();
-  }
-
   public void run() {
     System.out.println(ansi().fg(BLUE).a(ASCII_ART).reset());
     System.out.println(centerText(ASCII_WIDTH, AldaClient.version(), CYAN));
@@ -108,7 +84,7 @@ public class AldaRepl {
 
     System.out.println("\n" + ansi().fg(WHITE).bold().a(HELP_TEXT).reset() + "\n");
 
-    String promptPrefix = genPromptPrefix(null, null);
+    String promptPrefix = "";
 
     while (true) {
       String input = "";
@@ -153,21 +129,33 @@ public class AldaRepl {
           cmd.act(arguments.trim(), history, server, r);
 
           // reset the prompt (history might have changed)
-          promptPrefix = genPromptPrefix(history, promptPrefix);
+		  // TODO Come up with a better solution for this. Right now, we'll update prompt the next time we actually query the server
+          promptPrefix = "";
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
       } else {
         try {
           // Play the stuff we just got, with history as context
-          server.play(input, history.toString(), null, null, false);
+          AldaResponse playResponse = server.play(input, history.toString(), null, null, false);
 
           // If we have no exceptions, add to history
           history.append(input);
           history.append("\n");
 
           // If we're good, we should check to see if we reset the instrument
-          promptPrefix = genPromptPrefix(input, promptPrefix);
+		  if (playResponse != null &&
+			  playResponse.score != null &&
+			  playResponse.score.currentInstruments.length > 0) {
+			  // If we have multiple instruments, pick the first one.
+			  String instrument = playResponse.score.currentInstruments[0];
+			  if (instrument.length() > 0) {
+				  // Pick the first letter of the instrument
+				  promptPrefix = Character.toString(instrument.charAt(0));
+			  } else {
+				  promptPrefix = "";
+			  }
+		  }
         } catch (Throwable e) {
           server.error(e.getMessage());
           if (verbose) {
