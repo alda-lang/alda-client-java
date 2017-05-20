@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## 0.1.2 (2017-05-19)
 
 * Added a `--history` option to the `play` command. This can be used to provide context when playing new code. For example:
 
