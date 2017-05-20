@@ -12,6 +12,8 @@ The command above will result in the notes `f g a b > c` being played as eighth 
 
 This option is mainly useful for editor plugins and the upcoming client-side rewrite of the Alda REPL.
 
+* Work in progress client-side rewrite of the Alda REPL.
+
 ## 0.1.1 (2017-01-14)
 
 * Fixed 2 bugs re: `alda list` output:
