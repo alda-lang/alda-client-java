@@ -148,10 +148,9 @@ public class AldaRepl {
           history.append("\n");
 
           // If we're good, we should check to see if we reset the instrument
-          if (playResponse != null && playResponse.currentInstrument() != null) {
+          if (playResponse != null) {
             // If we have multiple instruments, pick the first one.
-            String instrument = playResponse.currentInstrument();
-            this.setPromptPrefix(instrument);
+            this.setPromptPrefix(playResponse.currentInstrument());
           }
         } catch (Throwable e) {
           server.error(e.getMessage());
