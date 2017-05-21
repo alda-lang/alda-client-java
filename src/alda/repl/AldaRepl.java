@@ -41,6 +41,8 @@ public class AldaRepl {
 
   private StringBuffer history;
 
+  private String promptPrefix = "";
+
   public AldaRepl(AldaServer server, boolean verbose) {
     this.server = server;
     server.setQuiet(true);
@@ -77,14 +79,19 @@ public class AldaRepl {
     return out;
   }
 
+  public void setPromptPrefix(String s) {
+    if (s != null && s.length() > 0)
+      promptPrefix = s.charAt(0) + "";
+    else
+      promptPrefix = "";
+  }
+
   public void run() {
     System.out.println(ansi().fg(BLUE).a(ASCII_ART).reset());
     System.out.println(centerText(ASCII_WIDTH, AldaClient.version(), CYAN));
     System.out.println(centerText(ASCII_WIDTH, "repl session", CYAN));
 
     System.out.println("\n" + ansi().fg(WHITE).bold().a(HELP_TEXT).reset() + "\n");
-
-    String promptPrefix = "";
 
     while (true) {
       String input = "";
@@ -126,11 +133,8 @@ public class AldaRepl {
           // pass in empty string if we have no arguments
           String arguments = splitString.length > 1 ? splitString[1] : "";
           // Run the command
-          cmd.act(arguments.trim(), history, server, r);
+          cmd.act(arguments.trim(), history, server, r, this::setPromptPrefix);
 
-          // reset the prompt (history might have changed)
-		  // TODO Come up with a better solution for this. Right now, we'll update prompt the next time we actually query the server
-          promptPrefix = "";
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
@@ -144,18 +148,11 @@ public class AldaRepl {
           history.append("\n");
 
           // If we're good, we should check to see if we reset the instrument
-		  if (playResponse != null &&
-			  playResponse.score != null &&
-			  playResponse.score.currentInstruments.length > 0) {
-			  // If we have multiple instruments, pick the first one.
-			  String instrument = playResponse.score.currentInstruments[0];
-			  if (instrument.length() > 0) {
-				  // Pick the first letter of the instrument
-				  promptPrefix = Character.toString(instrument.charAt(0));
-			  } else {
-				  promptPrefix = "";
-			  }
-		  }
+          if (playResponse != null && playResponse.currentInstrument() != null) {
+            // If we have multiple instruments, pick the first one.
+            String instrument = playResponse.currentInstrument();
+            this.setPromptPrefix(instrument);
+          }
         } catch (Throwable e) {
           server.error(e.getMessage());
           if (verbose) {
