@@ -132,12 +132,11 @@ public class AldaRepl {
 
       if (newPrompt != null && newPrompt.length() > 0) {
         promptPrefix = newPrompt;
-      } else {
-        promptPrefix = "";
+        return;
       }
-    } else {
-      promptPrefix = "";
     }
+    // If we failed anywhere, reset prompt (probably no instruments playing).
+    promptPrefix = "";
   }
 
   public void run() {
