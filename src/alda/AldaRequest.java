@@ -44,6 +44,9 @@ public class AldaRequest {
   private final static int REQUEST_TIMEOUT = 2500; //  ms
   private final static int REQUEST_RETRIES = 3;    //  Before we abandon
 
+  // Enable debug to print out all json queries to server
+  private static boolean debug = false;
+
   private transient String host;
   private transient int port;
   public transient byte[] workerToUse;
@@ -56,6 +59,13 @@ public class AldaRequest {
   public String command;
   public String body;
   public AldaRequestOptions options;
+
+  /**
+   * Sets the global debug flag on/off to print json as it comes in
+   */
+  public static void setDebug(boolean toSet) {
+    debug = toSet;
+  }
 
   public String toJson() {
     Gson gson = new Gson();
@@ -96,6 +106,8 @@ public class AldaRequest {
         throw new NoResponseException("Connection interrupted.");
       }
 
+      if (debug)
+        System.err.println(responseJson);
       AldaResponse response = AldaResponse.fromJson(responseJson);
 
       if (!response.noWorker) {
