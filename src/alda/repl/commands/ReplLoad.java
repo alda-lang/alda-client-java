@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 
 import alda.AldaServer;
 import alda.AldaResponse;
+import alda.AldaResponse.AldaScore;
 import alda.Util;
 import jline.console.ConsoleReader;
 
@@ -25,7 +26,7 @@ import jline.console.ConsoleReader;
 public class ReplLoad implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
-                  ConsoleReader reader, Consumer<String> newInstrument) {
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     if (args == "") {
       usage();
       return;
@@ -59,7 +60,7 @@ public class ReplLoad implements ReplCommand {
         history.append(newHistory);
 
         // Set new prompt string if possible
-        newInstrument.accept(AldaResponse.fromJsonScore(res).currentInstrument());
+        newInstrument.accept(AldaResponse.fromJsonScore(res));
       }
     } catch (IOException|UncheckedIOException e) {
       System.err.println("There was an error reading '" + args + "'");

@@ -1,5 +1,7 @@
 package alda;
 
+import java.util.Map;
+
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
@@ -18,6 +20,8 @@ public class AldaResponse {
     @SerializedName("current-instruments")
     public String[] currentInstruments;
 
+    public Map<String, String[]> nicknames;
+
     /**
      * Returns the current instruments if possible
      * @return null if not possible, string array with current instruments if possible.
@@ -27,16 +31,6 @@ public class AldaResponse {
           this.currentInstruments.length > 0) {
         return this.currentInstruments;
       }
-      return null;
-    }
-
-    /**
-     * Returns the current instrument (a single pick) if possible
-     * @return null if not possible, string with current instrument if possible.
-     */
-    public String currentInstrument() {
-      if (currentInstruments() != null)
-        return currentInstruments()[0];
       return null;
     }
   }
@@ -52,15 +46,5 @@ public class AldaResponse {
   public static AldaScore fromJsonScore(String json) {
     Gson gson = new Gson();
     return gson.fromJson(json, AldaScore.class);
-  }
-
-  /**
-   * Returns the current instrument (a single pick) if possible
-   * @return null if not possible, string with current instrument if possible.
-   */
-  public String currentInstrument() {
-    if (score != null)
-      return score.currentInstrument();
-    return null;
   }
 }

@@ -4,6 +4,7 @@ package alda.repl.commands;
 
 import alda.AldaServer;
 import java.util.function.Consumer;
+import alda.AldaResponse.AldaScore;
 import jline.console.ConsoleReader;
 
 /**
@@ -25,7 +26,7 @@ public interface ReplCommand {
    *   The new current instrument will be passed in as a string.
    */
   public void act(String args, StringBuffer history, AldaServer server,
-                  ConsoleReader reader, Consumer<String> newInstrument);
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument);
 
   /**
    * Returns the documentation summary of this ReplCommand

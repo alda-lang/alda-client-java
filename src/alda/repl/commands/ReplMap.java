@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import alda.AldaServer;
+import alda.AldaResponse.AldaScore;
 import alda.Util;
 
 import java.util.function.Consumer;
@@ -17,7 +18,7 @@ import jline.console.ConsoleReader;
 public class ReplMap implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
-                  ConsoleReader reader, Consumer<String> newInstrument) {
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     try {
       String mode = Util.scoreMode(false, true);
       String res = server.parseRaw(history.toString(), mode, false);

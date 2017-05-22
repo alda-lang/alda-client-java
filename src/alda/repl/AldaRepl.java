@@ -2,6 +2,9 @@
 package alda.repl;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +19,7 @@ import static org.fusesource.jansi.Ansi.Color.*;
 import alda.AldaServer;
 import alda.AldaClient;
 import alda.AldaResponse;
+import alda.AldaResponse.AldaScore;
 
 import alda.repl.commands.ReplCommand;
 import alda.repl.commands.ReplCommandManager;
@@ -79,11 +83,61 @@ public class AldaRepl {
     return out;
   }
 
-  public void setPromptPrefix(String s) {
-    if (s != null && s.length() > 0)
-      promptPrefix = s.charAt(0) + "";
-    else
+  /**
+   * Sanitizes instruments to remove their inst id.
+   * guitar-IrqxY becomes guitar
+   */
+  public String sanitizeInstrument(String instrument) {
+    return instrument.replaceFirst("-\\w+", "");
+  }
+
+  /**
+   * Converts the current instrument to it's prefix form
+   * For example, midi-square-wave becomes msw
+   */
+  public String instrumentToPrefix(String instrument) {
+    // Split on non-words
+    String[] parts = instrument.split("\\W");
+    StringBuffer completedName = new StringBuffer();
+    // Build new name on first char of every part from the above split.
+    for (String s : parts) {
+      if (s.length() > 0)
+        completedName.append(s.charAt(0));
+    }
+    return completedName.toString();
+  }
+
+  public void setPromptPrefix(AldaScore score) {
+    if (score != null && score.currentInstruments() != null) {
+      Map<String, String> nickMap = new HashMap<>();
+      if (score.nicknames != null) {
+        // Convert nick -> inst map to inst -> nick
+        score.nicknames.forEach((k, v) -> {
+            for (String inst : v) {
+              nickMap.putIfAbsent(inst, k);
+            }
+          });
+      }
+
+      String newPrompt =
+        Arrays.stream(score.currentInstruments())
+        // Translate instruments to nicknames if available
+        .map((inst) -> nickMap.getOrDefault(inst, sanitizeInstrument(inst)))
+        // Translate midi-electric-piano-1 -> mep1
+        .map(this::instrumentToPrefix)
+        // Combine all instruments with /
+        .reduce("", (a, b) -> a + "/" + b)
+        // remove leading / (which is always present)
+        .substring(1);
+
+      if (newPrompt != null && newPrompt.length() > 0) {
+        promptPrefix = newPrompt;
+      } else {
+        promptPrefix = "";
+      }
+    } else {
       promptPrefix = "";
+    }
   }
 
   public void run() {
@@ -150,7 +204,7 @@ public class AldaRepl {
           // If we're good, we should check to see if we reset the instrument
           if (playResponse != null) {
             // If we have multiple instruments, pick the first one.
-            this.setPromptPrefix(playResponse.currentInstrument());
+            this.setPromptPrefix(playResponse.score);
           }
         } catch (Throwable e) {
           server.error(e.getMessage());
