@@ -59,10 +59,16 @@ public class AldaRequest {
   public AldaRequestOptions options;
 
   /**
-   * Sets the global debug flag on/off to print json as it comes in
+   * Sets the global debug flag on/off to print all incoming json
    */
   public static void setDebug(boolean toSet) {
     debug = toSet;
+  }
+  /**
+   * Gets the global debug flag, see setDebug
+   */
+  public static boolean getDebug() {
+    return debug;
   }
 
   public String toJson() {
