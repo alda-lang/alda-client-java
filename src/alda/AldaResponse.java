@@ -11,6 +11,7 @@ public class AldaResponse {
   public boolean pending;
   public String signal;
   public String body;
+  public String jobId;
   public AldaScore score;
   public byte[] workerAddress;
   public boolean noWorker;

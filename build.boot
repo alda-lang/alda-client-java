@@ -20,7 +20,7 @@
                   [org.fusesource.jansi/jansi       "1.11"]
                   [us.bpsm/edn-java                 "0.4.6"]
                   [com.jcabi/jcabi-manifests        "1.1"]
-                  [org.zeromq/jeromq                "0.3.5"]
+                  [org.zeromq/jeromq                "0.4.0"]
                   [jline                            "2.12.1"]])
 
 (require '[adzerk.bootlaces         :refer :all]
