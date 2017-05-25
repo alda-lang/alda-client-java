@@ -70,9 +70,21 @@ public class AldaRequest {
     return gson.toJson(this);
   }
 
+  /**
+   * Cleans up existing ZMQ sockets and starts from a clean slate
+   * Useful if we recently had a connection problem.
+   */
+  private void cleanupSockets() {
+    Socket socket = findExistingSocketForHostAndPort(this.host, this.port);
+    if (socket != null) {
+      getZContext().destroySocket(socket);
+    }
+  }
+
   private AldaResponse sendRequest(String req, ZContext ctx, Socket client, int timeout, int retries)
     throws NoResponseException {
     if (retries < 0 || Thread.currentThread().isInterrupted()) {
+      cleanupSockets();
       throw new NoResponseException("Alda server is down. To start the server, run `alda up`.");
     }
 
@@ -90,17 +102,20 @@ public class AldaRequest {
     PollItem items[] = {new PollItem(client, Poller.POLLIN)};
     int rc = ZMQ.poll(items, timeout);
     if (rc == -1) {
+      cleanupSockets();
       throw new NoResponseException("Connection interrupted.");
     }
 
     if (items[0].isReadable()) {
       String address = client.recvStr();
       if (address == null) {
+        cleanupSockets();
         throw new NoResponseException("Connection interrupted.");
       }
 
       String responseJson = client.recvStr();
       if (responseJson == null) {
+        cleanupSockets();
         throw new NoResponseException("Connection interrupted.");
       }
 
