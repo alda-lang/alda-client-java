@@ -1,6 +1,7 @@
 package alda;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
@@ -18,17 +19,17 @@ public class AldaResponse {
     @SerializedName("chord-mode")
     public Boolean chordMode;
     @SerializedName("current-instruments")
-    public String[] currentInstruments;
+    public Set<String> currentInstruments;
 
-    public Map<String, String[]> nicknames;
+    public Map<String, Set<String>> nicknames;
 
     /**
      * Returns the current instruments if possible
      * @return null if not possible, string array with current instruments if possible.
      */
-    public String[] currentInstruments() {
+    public Set<String> currentInstruments() {
       if (this.currentInstruments != null &&
-          this.currentInstruments.length > 0) {
+          this.currentInstruments.size() > 0) {
         return this.currentInstruments;
       }
       return null;
