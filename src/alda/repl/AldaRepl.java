@@ -1,4 +1,3 @@
-
 package alda.repl;
 
 import java.io.IOException;
@@ -208,7 +207,9 @@ public class AldaRepl {
       } else {
         try {
           // Play the stuff we just got, with history as context
-          AldaResponse playResponse = server.play(input, history.toString(), null, null, false);
+          AldaResponse playResponse = server.playFromRepl(
+            input, history.toString(), null, null, false
+          );
 
           // If we have no exceptions, add to history
           history.append(input);

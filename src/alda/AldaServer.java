@@ -17,6 +17,10 @@ public class AldaServer extends AldaProcess {
   private static int STARTUP_RETRY_INTERVAL = 250; // ms
   private static int PLAY_STATUS_INTERVAL = 250; // ms
 
+  // Relevant to playing input from the REPL.
+  private static final int BUSY_WORKER_TIMEOUT = 10000;      // ms
+  private static final int BUSY_WORKER_RETRY_INTERVAL = 500; // ms
+
   public AldaServer(String host, int port, int timeout, boolean verbose, boolean quiet) {
     this.host = normalizeHost(host);
     this.port = port;
@@ -375,6 +379,42 @@ public class AldaServer extends AldaProcess {
       error("Unable to read file: " + file.getAbsolutePath());
     }
   }
+
+  public AldaResponse playFromRepl(String input, String history, String from,
+    String to, boolean catchExceptions)
+    throws NoResponseException {
+    int retries = BUSY_WORKER_TIMEOUT / BUSY_WORKER_RETRY_INTERVAL;
+    return playFromRepl(input, history, from, to, catchExceptions, retries);
+  }
+
+  public AldaResponse playFromRepl(String input, String history, String from,
+    String to, boolean catchExceptions, int retries)
+    throws NoResponseException {
+    // Do some retries if workers aren't available just yet.
+    String noWorkersYetMsg = "No worker processes are ready yet";
+    String workersBusyMsg = "All worker processes are currently busy";
+
+    try {
+      return play(input, history.toString(), null, null, false);
+    } catch (Throwable e) {
+      String error = e.getMessage();
+      if (error != null &&
+          (error.contains(noWorkersYetMsg) || error.contains(workersBusyMsg))
+          && retries > 0) {
+        try {
+          Thread.sleep(BUSY_WORKER_RETRY_INTERVAL);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          throw new RuntimeException(ie);
+        }
+        retries--;
+        return playFromRepl(input, history, from, to, catchExceptions, retries);
+      } else {
+        throw(e);
+      }
+    }
+  }
+
 
   public AldaResponse playStatus(byte[] workerAddress, String jobId)
     throws NoResponseException {

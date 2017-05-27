@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.1.3 (2017-05-27)
+
+* Added generous retry logic when submitting requests to the server via the
+  REPL. See [#12](https://github.com/alda-lang/alda-client-java/issues/12) for
+  context.
+
 ## 0.1.2 (2017-05-19)
 
 * Added a `--history` option to the `play` command. This can be used to provide context when playing new code. For example:

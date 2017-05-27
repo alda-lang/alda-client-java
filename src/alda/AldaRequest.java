@@ -51,6 +51,7 @@ public class AldaRequest {
 
   private final static int REQUEST_TIMEOUT = 500; //  ms
   private final static int REQUEST_RETRIES = 10;  //  Before we abandon
+  private final static int WRONG_JOB_RETRIES = 10;
 
   // Enable debug to print out all json queries to server
   private static boolean debug = false;
@@ -86,6 +87,57 @@ public class AldaRequest {
     return gson.toJson(this);
   }
 
+  /**
+   * Try up to WRONG_JOB_RETRIES times to receive a message from the server that
+   * has the same jobId as the request we sent.
+   *
+   * This is to avoid accidentally using a response that was sent out of sync
+   * for a different request.
+   *
+   * Returns null if we fail to receive a message for our jobId.
+   */
+  private AldaResponse receiveMatchingResponse(Socket client, int timeout)
+    throws NoResponseException {
+    Poller poller = getPoller();
+
+    String jobId = options.jobId;
+
+    int retries = WRONG_JOB_RETRIES;
+
+    while (retries > 0) {
+      int rc = poller.poll(timeout);
+      if (rc == -1) {
+        throw new NoResponseException("Connection interrupted.");
+      }
+
+      if (poller.pollin(0)) {
+        ZMsg zmsg = ZMsg.recvMsg(client);
+        if (debug) zmsg.dump();
+
+        byte[] address = zmsg.unwrap().getData(); // discard envelope
+        String responseJson = zmsg.popString();
+
+        AldaResponse response = AldaResponse.fromJson(responseJson);
+
+        if (jobId != null &&
+            response.jobId != null &&
+            !response.jobId.equals(jobId)) {
+          retries--;
+          continue;
+        }
+
+        if (!response.noWorker)
+          response.workerAddress = zmsg.pop().getData();
+
+        return response;
+      }
+
+      retries--;
+    }
+
+    return null;
+  }
+
   private AldaResponse sendRequest(String req, int timeout, int retries)
     throws NoResponseException {
     if (retries < 0 || Thread.currentThread().isInterrupted()) {
@@ -96,42 +148,19 @@ public class AldaRequest {
     Socket client = rebuildSocket();
 
     ZMsg msg = new ZMsg();
-    msg.addString(this.toJson());
+
+    msg.addString(req);
     if (this.workerToUse != null) {
       msg.add(this.workerToUse);
     }
+
     msg.addString(this.command);
+
     msg.send(client);
+    AldaResponse response = receiveMatchingResponse(client, timeout);
 
-    int rc = poller.poll(timeout);
-    if (rc == -1) {
-      throw new NoResponseException("Connection interrupted.");
-    }
-
-    if (poller.pollin(0)) {
-      String address = client.recvStr();
-      if (address == null) {
-        throw new NoResponseException("Connection interrupted.");
-      }
-
-      String responseJson = client.recvStr();
-      if (responseJson == null) {
-        throw new NoResponseException("Connection interrupted.");
-      }
-
-      if (debug)
-        System.err.println(responseJson);
-      AldaResponse response = AldaResponse.fromJson(responseJson);
-
-      if (!response.noWorker) {
-        byte[] workerAddress = client.recv(ZMQ.DONTWAIT);
-        if (workerAddress != null) {
-          response.workerAddress = workerAddress;
-        }
-      }
-
+    if (response != null)
       return response;
-    }
 
     // Didn't get a response within the allowed timeout. Rebuild the socket and
     // try sending the request again, unless we're out of retries.

@@ -42,9 +42,9 @@ public class ReplPlay implements ReplCommand {
     }
 
     try {
-      server.play(history.toString(), "",
-                  from.length() > 0 ? from : null,
-                  to.length() > 0 ? to : null, false);
+      server.playFromRepl(history.toString(), "",
+                          from.length() > 0 ? from : null,
+                          to.length() > 0 ? to : null, false);
     } catch (Throwable e) {
       server.error(e.getMessage());
     }
