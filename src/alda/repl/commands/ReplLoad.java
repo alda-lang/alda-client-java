@@ -11,8 +11,11 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import java.util.stream.Stream;
+import java.util.function.Consumer;
 
 import alda.AldaServer;
+import alda.AldaResponse;
+import alda.AldaResponse.AldaScore;
 import alda.Util;
 import jline.console.ConsoleReader;
 
@@ -22,11 +25,14 @@ import jline.console.ConsoleReader;
  */
 public class ReplLoad implements ReplCommand {
   @Override
-  public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
+  public void act(String args, StringBuffer history, AldaServer server,
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     if (args == "") {
       usage();
       return;
     }
+    // Turn ~ into home
+    args = args.replaceFirst("^~",System.getProperty("user.home"));
     Stream<String> fLines = null;
     boolean error = false;
 
@@ -39,9 +45,10 @@ public class ReplLoad implements ReplCommand {
         });
 
       // Check if the score we just loaded is valid (prevent further errors)
+      String res = "";
       try {
         String mode = Util.scoreMode(false, true);
-        String res = server.parseRaw(newHistory.toString(), mode, false);
+        res = server.parseRaw(newHistory.toString(), mode, false);
       } catch (Throwable e) {
         server.error(e.getMessage());
         // Don't change 'history'
@@ -51,6 +58,9 @@ public class ReplLoad implements ReplCommand {
       if (!error) {
         history.delete(0, history.length());
         history.append(newHistory);
+
+        // Set new prompt string if possible
+        newInstrument.accept(AldaResponse.fromJsonScore(res));
       }
     } catch (IOException|UncheckedIOException e) {
       System.err.println("There was an error reading '" + args + "'");

@@ -29,6 +29,7 @@ public class ReplCommandManager {
                           new ReplMap(),
                           new ReplLoad(),
                           new ReplSave(),
+                          new ReplDebug(),
                           new ReplHelp(this)};
 
     for (ReplCommand c : cmds) {

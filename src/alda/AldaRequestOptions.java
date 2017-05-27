@@ -6,4 +6,5 @@ public class AldaRequestOptions {
   public String from;
   public String to;
   public String history;
+  public String jobId;
 }

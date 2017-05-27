@@ -2,6 +2,8 @@
 package alda.repl.commands;
 
 import alda.AldaServer;
+import alda.AldaResponse.AldaScore;
+import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
 /**
@@ -10,8 +12,10 @@ import jline.console.ConsoleReader;
  */
 public class ReplNew implements ReplCommand {
   @Override
-  public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
+  public void act(String args, StringBuffer history, AldaServer server,
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     history.delete(0, history.length());
+    newInstrument.accept(null);
   }
   @Override
   public String docSummary() {

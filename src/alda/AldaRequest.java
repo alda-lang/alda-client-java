@@ -18,29 +18,42 @@ public class AldaRequest {
     return zContext;
   }
 
-  private Socket getDealerSocket() {
-    Socket socket = findExistingSocketForHostAndPort(this.host, this.port);
-    if (socket != null){
-      return socket;
+  private static Poller poller;
+  private Poller getPoller() {
+    if (poller == null) {
+      poller = getZContext().createPoller(1);
     }
-    return getZContext().createSocket(ZMQ.DEALER);
+    return poller;
   }
 
-  private Socket findExistingSocketForHostAndPort(String host, int port) {
-    String endpoint = host.replace("localhost", "127.0.0.1")+":"+port;
-
-    for (Socket socket: getZContext().getSockets()){
-      Object lastEndpoint = socket.base().getsockoptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT);
-      if (lastEndpoint != null && endpoint.equals(lastEndpoint.toString())) {
-          return socket;
-      }
-
+  private static Socket socket;
+  private Socket getSocket() {
+    if (socket == null) {
+      socket = getZContext().createSocket(ZMQ.DEALER);
+      socket.connect(this.host + ":" + this.port);
+      getPoller().register(socket, Poller.POLLIN);
     }
-    return null;
+    return socket;
   }
 
-  private final static int REQUEST_TIMEOUT = 2500; //  ms
-  private final static int REQUEST_RETRIES = 3;    //  Before we abandon
+  private void destroySocket() {
+    if (socket != null) {
+      poller.unregister(socket);
+      getZContext().destroySocket(socket);
+      socket = null;
+    }
+  }
+
+  private Socket rebuildSocket() {
+    destroySocket();
+    return getSocket();
+  }
+
+  private final static int REQUEST_TIMEOUT = 500; //  ms
+  private final static int REQUEST_RETRIES = 10;  //  Before we abandon
+
+  // Enable debug to print out all json queries to server
+  private static boolean debug = false;
 
   private transient String host;
   private transient int port;
@@ -55,19 +68,32 @@ public class AldaRequest {
   public String body;
   public AldaRequestOptions options;
 
+  /**
+   * Sets the global debug flag on/off to print all incoming json
+   */
+  public static void setDebug(boolean toSet) {
+    debug = toSet;
+  }
+  /**
+   * Gets the global debug flag, see setDebug
+   */
+  public static boolean getDebug() {
+    return debug;
+  }
+
   public String toJson() {
     Gson gson = new Gson();
     return gson.toJson(this);
   }
 
-  private AldaResponse sendRequest(String req, ZContext ctx, Socket client, int timeout, int retries)
+  private AldaResponse sendRequest(String req, int timeout, int retries)
     throws NoResponseException {
     if (retries < 0 || Thread.currentThread().isInterrupted()) {
       throw new NoResponseException("Alda server is down. To start the server, run `alda up`.");
     }
 
-    assert (client != null);
-    client.connect(this.host + ":" + this.port);
+    Poller poller = getPoller();
+    Socket client = rebuildSocket();
 
     ZMsg msg = new ZMsg();
     msg.addString(this.toJson());
@@ -77,13 +103,12 @@ public class AldaRequest {
     msg.addString(this.command);
     msg.send(client);
 
-    PollItem items[] = {new PollItem(client, Poller.POLLIN)};
-    int rc = ZMQ.poll(items, timeout);
+    int rc = poller.poll(timeout);
     if (rc == -1) {
       throw new NoResponseException("Connection interrupted.");
     }
 
-    if (items[0].isReadable()) {
+    if (poller.pollin(0)) {
       String address = client.recvStr();
       if (address == null) {
         throw new NoResponseException("Connection interrupted.");
@@ -94,6 +119,8 @@ public class AldaRequest {
         throw new NoResponseException("Connection interrupted.");
       }
 
+      if (debug)
+        System.err.println(responseJson);
       AldaResponse response = AldaResponse.fromJson(responseJson);
 
       if (!response.noWorker) {
@@ -106,26 +133,24 @@ public class AldaRequest {
       return response;
     }
 
-    // Send request again until we're out of retries
-    return sendRequest(req, ctx, client, timeout, retries - 1);
+    // Didn't get a response within the allowed timeout. Rebuild the socket and
+    // try sending the request again, unless we're out of retries.
+    return sendRequest(req, retries - 1);
   }
 
-  private AldaResponse sendRequest(String req, ZContext ctx, Socket client,
-                                   int timeout)
+  private AldaResponse sendRequest(String req, int timeout)
     throws NoResponseException {
-    return sendRequest(req, ctx, client, timeout, REQUEST_RETRIES);
+    return sendRequest(req, timeout, REQUEST_RETRIES);
   }
 
-  private AldaResponse sendRequest(String req, ZContext ctx, Socket client)
+  private AldaResponse sendRequest(String req)
     throws NoResponseException {
-    return sendRequest(req, ctx, client, REQUEST_TIMEOUT, REQUEST_RETRIES);
+    return sendRequest(req, REQUEST_TIMEOUT, REQUEST_RETRIES);
   }
 
   public AldaResponse send(int timeout, int retries)
     throws NoResponseException {
-    ZContext ctx = getZContext();
-    Socket client = getDealerSocket();
-    return sendRequest(this.toJson(), ctx, client, timeout, retries);
+    return sendRequest(this.toJson(), timeout, retries);
   }
 
   public AldaResponse send(int timeout) throws NoResponseException {

@@ -1,6 +1,8 @@
 package alda.repl.commands;
 
 import alda.AldaServer;
+import alda.AldaResponse.AldaScore;
+import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
 /**
@@ -8,8 +10,9 @@ import jline.console.ConsoleReader;
  * Takes from and to arguments, see documentation
  */
 public class ReplPlay implements ReplCommand {
-  @Override
-  public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
+
+  public void act(String args, StringBuffer history, AldaServer server,
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     // Parse from/to args
     String[] arguments = args.split("\\s+");
     String from = "";

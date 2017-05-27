@@ -2,6 +2,9 @@
 package alda.repl;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,6 +18,8 @@ import static org.fusesource.jansi.Ansi.Color.*;
 
 import alda.AldaServer;
 import alda.AldaClient;
+import alda.AldaResponse;
+import alda.AldaResponse.AldaScore;
 
 import alda.repl.commands.ReplCommand;
 import alda.repl.commands.ReplCommandManager;
@@ -39,6 +44,8 @@ public class AldaRepl {
   private ReplCommandManager manager;
 
   private StringBuffer history;
+
+  private String promptPrefix = "";
 
   public AldaRepl(AldaServer server, boolean verbose) {
     this.server = server;
@@ -76,29 +83,74 @@ public class AldaRepl {
     return out;
   }
 
-  private static final Pattern promptPattern = Pattern.compile("[-a-z0-10]+:");
   /**
-   * Generates the prompt prefix given a history/code buffer
-   * @param in The string to check for instrument: directives
-   * @param defaultStr The default string to return if we can't find any matches
+   * Sanitizes instruments to remove their inst id.
+   * guitar-IrqxY becomes guitar
    */
-  private String genPromptPrefix(CharSequence in, CharSequence defaultStr) {
-    if (defaultStr == null)
-      defaultStr = "";
+  public String sanitizeInstrument(String instrument) {
+    return instrument.replaceFirst("-\\w+$", "");
+  }
 
-    if (in == null || in.length() == 0) {
-      return defaultStr.toString();
+  /**
+   * Converts the current instrument to it's prefix form
+   * For example, midi-square-wave becomes msw
+   */
+  public String instrumentToPrefix(String instrument) {
+    // Split on non-words
+    String[] parts = instrument.split("\\W");
+    StringBuffer completedName = new StringBuffer();
+    // Build new name on first char of every part from the above split.
+    for (String s : parts) {
+      if (s.length() > 0)
+        completedName.append(s.charAt(0));
     }
-    Matcher result = promptPattern.matcher(in);
-    String match = null;
+    return completedName.toString();
+  }
 
-    while (result.find()) {
-      match = result.group();
+  public void setPromptPrefix(AldaScore score) {
+    if (score != null
+		&& score.currentInstruments() != null
+		&& score.currentInstruments().size() > 0) {
+	  Set<String> instruments = score.currentInstruments();
+	  boolean nicknameFound = false;
+	  String newPrompt = null;
+      if (score.nicknames != null) {
+		// Convert nick -> inst map to inst -> nick
+		for (Map.Entry<String, Set<String>> entry : score.nicknames.entrySet()) {
+		  // Check to see if we are playing any instruments from the nickname value set.
+		  Set<String> val = entry.getValue();
+		  // This destroys the nicknames value sets in the process.
+		  val.retainAll(instruments);
+		  if (val.size() > 0) {
+			// Remove a possible period seperator, IE: nickname.piano
+			newPrompt = entry.getKey().replaceFirst("\\.\\w+$", "");
+			newPrompt = instrumentToPrefix(newPrompt);
+			break;
+		  }
+		}
+	  }
+
+	  // No groups found, translate instruments normally:
+	  if (newPrompt == null) {
+		newPrompt =
+		  score.currentInstruments().stream()
+		  // Translate instruments to nicknames if available
+		  .map(this::sanitizeInstrument)
+		  // Translate midi-electric-piano-1 -> mep1
+		  .map(this::instrumentToPrefix)
+		  // Combine all instruments with /
+		  .reduce("", (a, b) -> a + "/" + b)
+		  // remove leading / (which is always present)
+		  .substring(1);
+	  }
+
+	  if (newPrompt != null && newPrompt.length() > 0) {
+        promptPrefix = newPrompt;
+        return;
+      }
     }
-    if (match != null) {
-      return match.charAt(0) + "";
-    }
-    return defaultStr.toString();
+    // If we failed anywhere, reset prompt (probably no instruments playing).
+    promptPrefix = "";
   }
 
   public void run() {
@@ -107,8 +159,6 @@ public class AldaRepl {
     System.out.println(centerText(ASCII_WIDTH, "repl session", CYAN));
 
     System.out.println("\n" + ansi().fg(WHITE).bold().a(HELP_TEXT).reset() + "\n");
-
-    String promptPrefix = genPromptPrefix(null, null);
 
     while (true) {
       String input = "";
@@ -150,24 +200,24 @@ public class AldaRepl {
           // pass in empty string if we have no arguments
           String arguments = splitString.length > 1 ? splitString[1] : "";
           // Run the command
-          cmd.act(arguments.trim(), history, server, r);
+          cmd.act(arguments.trim(), history, server, r, this::setPromptPrefix);
 
-          // reset the prompt (history might have changed)
-          promptPrefix = genPromptPrefix(history, promptPrefix);
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
       } else {
         try {
           // Play the stuff we just got, with history as context
-          server.play(input, history.toString(), null, null, false);
+          AldaResponse playResponse = server.play(input, history.toString(), null, null, false);
 
           // If we have no exceptions, add to history
           history.append(input);
           history.append("\n");
 
           // If we're good, we should check to see if we reset the instrument
-          promptPrefix = genPromptPrefix(input, promptPrefix);
+          if (playResponse != null) {
+            this.setPromptPrefix(playResponse.score);
+          }
         } catch (Throwable e) {
           server.error(e.getMessage());
           if (verbose) {

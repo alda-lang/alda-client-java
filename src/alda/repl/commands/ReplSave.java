@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import alda.AldaServer;
+import alda.AldaResponse.AldaScore;
+import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
 /**
@@ -21,7 +23,8 @@ import jline.console.ConsoleReader;
 public class ReplSave implements ReplCommand {
   private String oldSaveFile = null;
   @Override
-  public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
+  public void act(String args, StringBuffer history, AldaServer server,
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     // Turn ~ into home
     args = args.replaceFirst("^~",System.getProperty("user.home"));
     try {

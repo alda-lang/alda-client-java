@@ -2,6 +2,8 @@
 package alda.repl.commands;
 
 import alda.AldaServer;
+import alda.AldaResponse.AldaScore;
+import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
 /**
@@ -22,7 +24,9 @@ public class ReplHelp implements ReplCommand {
     cmdManager = m;
   }
 
-  public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader) {
+  @Override
+  public void act(String args, StringBuffer history, AldaServer server,
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     args = args.trim();
 
     // Print out default help info

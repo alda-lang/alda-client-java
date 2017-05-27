@@ -1,8 +1,10 @@
 
 package alda.repl.commands;
 
-import alda.AldaServer;
 
+import alda.AldaServer;
+import java.util.function.Consumer;
+import alda.AldaResponse.AldaScore;
 import jline.console.ConsoleReader;
 
 /**
@@ -13,7 +15,6 @@ import jline.console.ConsoleReader;
  */
 public interface ReplCommand {
 
-
   /**
    * Runs this ReplCommand given the selected history.
    * This ReplCommand will modify the StringBuffer passed in to do it's actions.
@@ -21,8 +22,11 @@ public interface ReplCommand {
    * @param history The current history string for this repl
    * @param server The server to play pull data from, if needed.
    * @param reader A consoleReader so this command can prompt for user input
+   * @param newInstrument A function to call if the current instrument changes.
+   *   The new current instrument will be passed in as a string.
    */
-  public void act(String args, StringBuffer history, AldaServer server, ConsoleReader reader);
+  public void act(String args, StringBuffer history, AldaServer server,
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument);
 
   /**
    * Returns the documentation summary of this ReplCommand
