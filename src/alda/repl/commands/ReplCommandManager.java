@@ -15,6 +15,7 @@ import alda.AldaServer;
 public class ReplCommandManager {
 
   private Map<String, ReplCommand> commands;
+  private String oldSaveFile = null;
 
   public ReplCommandManager() {
     commands = new HashMap<>();
@@ -23,13 +24,13 @@ public class ReplCommandManager {
 
     // Temp array to store commands so we can iterate over them later
     ReplCommand[] cmds = {new ReplPlay(),
-                          new ReplNew(),
                           new ReplQuit(),
                           new ReplScore(),
                           new ReplMap(),
-                          new ReplLoad(),
-                          new ReplSave(),
                           new ReplDebug(),
+                          new ReplNew(this),
+                          new ReplLoad(this),
+                          new ReplSave(this),
                           new ReplHelp(this)};
 
     for (ReplCommand c : cmds) {
@@ -53,5 +54,18 @@ public class ReplCommandManager {
    */
   public Collection<ReplCommand> values() {
     return commands.values();
+  }
+
+  /**
+   * Gets the last saved filename, as a string
+   */
+  public String getSaveFile() {
+    return oldSaveFile;
+  }
+  /**
+   * Sets the last saved file.
+   */
+  public void setSaveFile(String s) {
+    oldSaveFile = s;
   }
 }
