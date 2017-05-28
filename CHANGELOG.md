@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.4 (2017-05-27)
+
+* Minor bugfixes.
+
 ## 0.1.3 (2017-05-27)
 
 * Added generous retry logic when submitting requests to the server via the

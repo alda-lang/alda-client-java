@@ -100,7 +100,7 @@ public class AldaRequest {
     throws NoResponseException {
     Poller poller = getPoller();
 
-    String jobId = options.jobId;
+    String jobId = options == null ? null : options.jobId;
 
     int retries = WRONG_JOB_RETRIES;
 
@@ -164,7 +164,7 @@ public class AldaRequest {
 
     // Didn't get a response within the allowed timeout. Rebuild the socket and
     // try sending the request again, unless we're out of retries.
-    return sendRequest(req, retries - 1);
+    return sendRequest(req, timeout, retries - 1);
   }
 
   private AldaResponse sendRequest(String req, int timeout)
