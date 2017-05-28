@@ -58,4 +58,12 @@ public interface ReplCommand {
    * @return the key to trigger, eg: 'help'
    */
   public String key();
+
+  /**
+   * Reset's any internal state this command has.
+   * Useful to reset state when :new is called
+   */
+  public default void reset() {
+    return;
+  }
 }

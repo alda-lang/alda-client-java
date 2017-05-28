@@ -69,4 +69,9 @@ public class ReplSave implements ReplCommand {
   public String key() {
     return "save";
   }
+
+  @Override
+  public void reset() {
+    oldSaveFile = null;
+  }
 }
