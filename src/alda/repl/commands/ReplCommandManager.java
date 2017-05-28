@@ -4,7 +4,6 @@ package alda.repl.commands;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import java.util.Iterator;
 
 import jline.console.ConsoleReader;
 import alda.AldaServer;
@@ -13,7 +12,7 @@ import alda.AldaServer;
  * Class to manage and store all ReplCommands.
  * The ReplHelp objecct uses this to generate it's list of documentation.
  */
-public class ReplCommandManager implements Iterable<ReplCommand> {
+public class ReplCommandManager {
 
   private Map<String, ReplCommand> commands;
 
@@ -24,7 +23,7 @@ public class ReplCommandManager implements Iterable<ReplCommand> {
 
     // Temp array to store commands so we can iterate over them later
     ReplCommand[] cmds = {new ReplPlay(),
-                          new ReplNew(this),
+                          new ReplNew(),
                           new ReplQuit(),
                           new ReplScore(),
                           new ReplMap(),
@@ -54,17 +53,5 @@ public class ReplCommandManager implements Iterable<ReplCommand> {
    */
   public Collection<ReplCommand> values() {
     return commands.values();
-  }
-
-  /**
-   * Runs a function over every command we have stored.
-   * @param func The function to run on each command.
-   */
-  public Iterator<ReplCommand> iterator() {
-    // Create a iterator over all the values in command.
-    return commands.entrySet()
-      .stream()
-      .map(Map.Entry::getValue)
-      .iterator();
   }
 }

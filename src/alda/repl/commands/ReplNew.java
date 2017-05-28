@@ -11,22 +11,12 @@ import jline.console.ConsoleReader;
  * Simply deletes the contents of the stringbuffer passed into it
  */
 public class ReplNew implements ReplCommand {
-
-  private ReplCommandManager cmdManager;
-
-  public ReplNew(ReplCommandManager m) {
-    cmdManager = m;
-  }
-
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     history.delete(0, history.length());
     newInstrument.accept(null);
-    // Reset state of all commands
-    cmdManager.forEach(ReplCommand::reset);
   }
-
   @Override
   public String docSummary() {
     return "Creates a new score.";
