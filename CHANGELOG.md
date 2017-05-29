@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.1.5 (2017-05-28)
+
+* Fixed bugs re: the current filename of a score when using the `:new`, `:load`
+  and `:save` commands in the REPL.
+
+  Thanks to [jgkamat] for all of your work on our shiny new REPL! :fireworks:
+
 ## 0.1.4 (2017-05-27)
 
 * Minor bugfixes.
@@ -37,3 +44,4 @@ Major thanks to [tobiasriedling] for both fixes!
 * * Extracted alda-client-java from the [main Alda repo](https://github.com/alda-lang/alda) as of version 1.0.0-rc50.
 
 [tobiasriedling]: https://github.com/tobiasriedling
+[jgkamat]: https://github.com/jgkamat
