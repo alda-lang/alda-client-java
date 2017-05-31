@@ -133,15 +133,6 @@ public class Main {
     @Parameter(names = {"-c", "--code"},
                description = "Supply Alda code as a string")
     public String code;
-
-    @Parameter(names = {"-l", "--lisp"},
-               description = "Display the score in the form of alda.lisp " +
-                             "(Clojure) code")
-    public boolean showLispCode = false;
-
-    @Parameter(names = {"-m", "--map"},
-               description = "Display the map of score data")
-    public boolean showScoreMap = false;
   }
 
   public static void handleCommandSpecificHelp(JCommander jc, String name, AldaCommand c) {
@@ -306,18 +297,17 @@ public class Main {
 
         case "parse":
           handleCommandSpecificHelp(jc, "parse", parse);
-          mode = Util.scoreMode(parse.showLispCode, parse.showScoreMap);
           inputType = Util.inputType(parse.file, parse.code);
 
           switch (inputType) {
             case "file":
-              server.parse(parse.file, mode);
+              server.parse(parse.file);
               break;
             case "code":
-              server.parse(parse.code, mode);
+              server.parse(parse.code);
               break;
             case "stdin":
-              server.parse(Util.getStdIn(), mode);
+              server.parse(Util.getStdIn());
               break;
             default:
               throw new Exception("Please provide some Alda code in the form " +

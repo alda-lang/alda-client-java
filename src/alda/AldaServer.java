@@ -430,12 +430,10 @@ public class AldaServer extends AldaProcess {
    * Raw parsing function
    * @return Returns the result of the parse, or null if the parse failed (and no exception was thrown)
    */
-  public String parseRaw(String code, String mode, boolean parseExceptions) throws NoResponseException {
+  public String parseRaw(String code, boolean parseExceptions) throws NoResponseException {
     AldaRequest req = new AldaRequest(this.host, this.port);
     req.command = "parse";
     req.body = code;
-    req.options = new AldaRequestOptions();
-    req.options.as = mode;
     AldaResponse res = req.send();
 
     if (res.success) {
@@ -446,17 +444,17 @@ public class AldaServer extends AldaProcess {
     }
   }
 
-  public void parse(String code, String mode) throws NoResponseException {
-    String res = parseRaw(code, mode, true);
+  public void parse(String code) throws NoResponseException {
+    String res = parseRaw(code, true);
     if (res != null) {
       System.out.println(res);
     }
   }
 
-  public void parse(File file, String mode) throws NoResponseException {
+  public void parse(File file) throws NoResponseException {
     try {
       String fileBody = Util.readFile(file);
-      parse(fileBody, mode);
+      parse(fileBody);
     } catch (IOException e) {
       error("Unable to read file: " + file.getAbsolutePath());
     }

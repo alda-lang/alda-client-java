@@ -99,42 +99,6 @@ public final class Util {
     return fromStdIn;
   }
 
-  public static String scoreMode(boolean showLispCode,
-                                 boolean showScoreMap)
-    throws InvalidOptionsException {
-    boolean[] modes = { showLispCode, showScoreMap };
-    int count = 0; for (boolean mode : modes) { if (mode) { count++; } }
-    if (count > 1) {
-      throw new InvalidOptionsException("You must choose either --lisp or " +
-                                        "--map mode (not both).");
-    } else if (count == 1) {
-      if (showLispCode)  { return "lisp"; }
-      if (showScoreMap)  { return "map"; }
-    }
-
-    // default to lisp mode if no options provided
-    return "lisp";
-  }
-
-  public static String scoreMode(boolean showScoreText,
-                                 boolean showLispCode,
-                                 boolean showScoreMap)
-    throws InvalidOptionsException {
-    boolean[] modes = { showScoreText, showLispCode, showScoreMap };
-    int count = 0; for (boolean mode : modes) { if (mode) { count++; } }
-    if (count > 1) {
-      throw new InvalidOptionsException("You must choose only one mode out " +
-                                        "of --text, --lisp or --map.");
-    } else if (count == 1) {
-      if (showScoreText) { return "text"; }
-      if (showLispCode)  { return "lisp"; }
-      if (showScoreMap)  { return "map"; }
-    }
-
-    // default to text mode if no options provided
-    return "text";
-  }
-
   public static String getProgramPath() throws URISyntaxException {
     return Main.class.getProtectionDomain().getCodeSource().getLocation()
                .toURI().getPath();

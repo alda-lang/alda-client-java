@@ -58,9 +58,8 @@ public class ReplLoad implements ReplCommand {
       // Check if the score we just loaded is valid (prevent further errors)
       String res = "";
       try {
-        String mode = Util.scoreMode(false, true);
         // TODO: include a jobId, add parsing to job system on the server-side
-        res = server.parseRaw(newHistory.toString(), mode, false);
+        res = server.parseRaw(newHistory.toString(), false);
       } catch (Throwable e) {
         server.error(e.getMessage());
         // Don't change 'history'

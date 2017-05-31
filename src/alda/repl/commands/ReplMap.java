@@ -20,8 +20,7 @@ public class ReplMap implements ReplCommand {
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     try {
-      String mode = Util.scoreMode(false, true);
-      String res = server.parseRaw(history.toString(), mode, false);
+      String res = server.parseRaw(history.toString(), false);
 
       if (res != null) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();

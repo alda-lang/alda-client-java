@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.2.0 (2017-05-30)
+
+* Removed the deprecated `--lisp` and `--map` options to the `parse` command.
+  There is now only one mode of output, and it corresponds to what `--map` used
+  to be.
+
 ## 0.1.5 (2017-05-28)
 
 * Fixed bugs re: the current filename of a score when using the `:new`, `:load`
