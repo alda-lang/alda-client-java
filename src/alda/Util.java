@@ -1,17 +1,24 @@
 package alda;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import clojure.java.api.Clojure;
 import clojure.lang.IFn;
@@ -19,11 +26,6 @@ import clojure.lang.ISeq;
 import clojure.lang.Symbol;
 import clojure.lang.ArraySeq;
 import com.google.gson.*;
-
-import java.net.MalformedURLException;
-import java.io.BufferedInputStream;
-import java.io.BufferedInputStream;
-import java.io.FileOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -41,6 +43,32 @@ public final class Util {
 
   public static Object[] conj(Object[] a, Object b) {
     return concat(a, new Object[]{b});
+  }
+
+  // Given an array of choices like {"yes", "no", "quit"}, offers them to the
+  // user as choices in this format: (y)es, (n)o, (q)uit
+  //
+  // Returns the selected string as soon as the user presses the corresponding
+  // key.
+  public static String promptWithChoices(List<String> choices)
+  throws IOException {
+    Map<Character, String> m = new LinkedHashMap<Character, String>();
+    for (String choice : choices) {
+      m.put(choice.charAt(0), choice);
+    }
+
+    String choiceString = choices.stream()
+                                 .map(str -> "(" + str.charAt(0) + ")"
+                                             + str.substring(1))
+                                 .collect(Collectors.joining(", "));
+
+    System.out.println(choiceString);
+
+    while (true) {
+      char c = (char) System.in.read();
+      String str = m.get(c);
+      if (str != null) return str;
+    }
   }
 
   public static boolean promptForConfirmation(String prompt) {
