@@ -20,6 +20,14 @@ public class ReplNew implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument) {
+
+    if (history.length() > 0) {
+      // Verify we can delete score
+      if (!ReplLoad.promptOverwrite(history, reader)) {
+        return;
+      }
+    }
+
     // Clear history
     history.delete(0, history.length());
     // Clear prompt

@@ -54,8 +54,8 @@ public class ReplSave implements ReplCommand {
         Files.write(Paths.get(args), history.toString().getBytes(), StandardOpenOption.CREATE_NEW);
         setOldSaveFile(args);
       } catch (FileAlreadyExistsException e) {
-        String confirm = reader.readLine("File already present, overwrite? [y/n]: ");
-        if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
+        String confirm = reader.readLine("File already present, overwrite? [y/N]: ");
+        if (ReplCommand.YES_ALIASES.contains(confirm.toLowerCase())) {
           Files.write(Paths.get(args), history.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
           setOldSaveFile(args);
         }
