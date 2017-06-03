@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+import jline.console.ConsoleReader;
+
 import clojure.java.api.Clojure;
 import clojure.lang.IFn;
 import clojure.lang.ISeq;
@@ -50,11 +52,17 @@ public final class Util {
   //
   // Returns the selected string as soon as the user presses the corresponding
   // key.
-  public static String promptWithChoices(List<String> choices)
+  public static String promptWithChoices(ConsoleReader rdr,
+                                         List<String> choices)
   throws IOException {
+    char[] allowedChars = new char[choices.size()];
     Map<Character, String> m = new LinkedHashMap<Character, String>();
-    for (String choice : choices) {
-      m.put(choice.charAt(0), choice);
+
+    for (int i = 0; i < choices.size(); i++) {
+      String choice = choices.get(i);
+      char c = choice.charAt(0);
+      allowedChars[i] = c;
+      m.put(c, choice);
     }
 
     String choiceString = choices.stream()
@@ -64,11 +72,9 @@ public final class Util {
 
     System.out.println(choiceString);
 
-    while (true) {
-      char c = (char) System.in.read();
-      String str = m.get(c);
-      if (str != null) return str;
-    }
+    // Read characters until the user enters one that is an option.
+    char c = (char)rdr.readCharacter(allowedChars);
+    return m.get(c);
   }
 
   public static boolean promptForConfirmation(String prompt) {

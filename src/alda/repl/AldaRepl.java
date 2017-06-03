@@ -159,7 +159,7 @@ public class AldaRepl {
     System.out.println("The server is down. Start server on port " +
                        server.port + "?");
     try {
-      switch (Util.promptWithChoices(Arrays.asList("yes", "no", "quit"))) {
+      switch (Util.promptWithChoices(r, Arrays.asList("yes", "no", "quit"))) {
         case "yes":
           try {
             System.out.println();
