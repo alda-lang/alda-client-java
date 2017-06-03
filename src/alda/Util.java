@@ -1,17 +1,26 @@
 package alda;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+
+import jline.console.ConsoleReader;
 
 import clojure.java.api.Clojure;
 import clojure.lang.IFn;
@@ -19,11 +28,6 @@ import clojure.lang.ISeq;
 import clojure.lang.Symbol;
 import clojure.lang.ArraySeq;
 import com.google.gson.*;
-
-import java.net.MalformedURLException;
-import java.io.BufferedInputStream;
-import java.io.BufferedInputStream;
-import java.io.FileOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -41,6 +45,36 @@ public final class Util {
 
   public static Object[] conj(Object[] a, Object b) {
     return concat(a, new Object[]{b});
+  }
+
+  // Given an array of choices like {"yes", "no", "quit"}, offers them to the
+  // user as choices in this format: (y)es, (n)o, (q)uit
+  //
+  // Returns the selected string as soon as the user presses the corresponding
+  // key.
+  public static String promptWithChoices(ConsoleReader rdr,
+                                         List<String> choices)
+  throws IOException {
+    char[] allowedChars = new char[choices.size()];
+    Map<Character, String> m = new LinkedHashMap<Character, String>();
+
+    for (int i = 0; i < choices.size(); i++) {
+      String choice = choices.get(i);
+      char c = choice.charAt(0);
+      allowedChars[i] = c;
+      m.put(c, choice);
+    }
+
+    String choiceString = choices.stream()
+                                 .map(str -> "(" + str.charAt(0) + ")"
+                                             + str.substring(1))
+                                 .collect(Collectors.joining(", "));
+
+    System.out.println(choiceString);
+
+    // Read characters until the user enters one that is an option.
+    char c = (char)rdr.readCharacter(allowedChars);
+    return m.get(c);
   }
 
   public static boolean promptForConfirmation(String prompt) {
