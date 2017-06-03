@@ -121,17 +121,16 @@ public class AldaRequest {
       // If there is a jobId option, we will ignore any response from the server
       // that doesn't have the same jobId, and try again. This will not count
       // against our remaining retries, as the server did respond.
-      if (jobId == null ||
-          (response.jobId != null && response.jobId.equals(jobId))) {
-        if (!response.noWorker)
-          response.workerAddress = zmsg.pop().getData();
+      if (jobId != null &&
+          response.jobId != null &&
+          !jobId.equals(response.jobId))
+        return sendRequest(request, timeout, retries);
 
-        request.destroy();
-        return response;
-      }
+      if (!response.noWorker)
+        response.workerAddress = zmsg.pop().getData();
 
-      // Wrong jobId; try again without decrementing retries.
-      return sendRequest(request, timeout, retries);
+      request.destroy();
+      return response;
     }
 
     // Didn't get a response within the allowed timeout. Try again, unless we're
