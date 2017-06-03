@@ -88,54 +88,55 @@ public class AldaRequest {
 
   private AldaResponse sendRequest(ZMsg request, int timeout, int retries)
     throws NoResponseException {
-    if (retries < 0 || Thread.currentThread().isInterrupted()) {
-      request.destroy();
-      throw new NoResponseException("Alda server is down. To start the server, run `alda up`.");
-    }
-
-    Poller poller = getPoller();
-    Socket client = rebuildSocket();
-
     // When non-null, used to help ensure that we don't use a response from the
     // server that was for a different request.
     String jobId = options == null ? null : options.jobId;
 
-    // don't destroy the message after sending
-    request.send(client, false);
+    while (retries >= 0 && !Thread.currentThread().isInterrupted()) {
+      Poller poller = getPoller();
+      Socket client = rebuildSocket();
 
-    int rc = poller.poll(timeout);
-    if (rc == -1) {
-      request.destroy();
-      throw new NoResponseException("Connection interrupted.");
+      // false means don't destroy the message after sending
+      request.send(client, false);
+
+      int rc = poller.poll(timeout);
+      if (rc == -1) {
+        request.destroy();
+        throw new NoResponseException("Connection interrupted.");
+      }
+
+      if (poller.pollin(0)) {
+        ZMsg zmsg = ZMsg.recvMsg(client);
+        if (debug) zmsg.dump();
+
+        byte[] address = zmsg.unwrap().getData(); // discard envelope
+        String responseJson = zmsg.popString();
+
+        AldaResponse response = AldaResponse.fromJson(responseJson);
+
+        // If there is a jobId option, we will ignore any response from the
+        // server that doesn't have the same jobId, and try again. This will not
+        // count against our remaining retries, as the server did respond.
+        if (jobId != null &&
+            response.jobId != null &&
+            !jobId.equals(response.jobId))
+          continue;
+
+        if (!response.noWorker)
+          response.workerAddress = zmsg.pop().getData();
+
+        request.destroy();
+        return response;
+      }
+
+      // Didn't get a response within the allowed timeout. Try again, unless
+      // we're out of retries.
+      retries--;
     }
 
-    if (poller.pollin(0)) {
-      ZMsg zmsg = ZMsg.recvMsg(client);
-      if (debug) zmsg.dump();
-
-      byte[] address = zmsg.unwrap().getData(); // discard envelope
-      String responseJson = zmsg.popString();
-
-      AldaResponse response = AldaResponse.fromJson(responseJson);
-
-      // If there is a jobId option, we will ignore any response from the server
-      // that doesn't have the same jobId, and try again. This will not count
-      // against our remaining retries, as the server did respond.
-      if (jobId != null &&
-          response.jobId != null &&
-          !jobId.equals(response.jobId))
-        return sendRequest(request, timeout, retries);
-
-      if (!response.noWorker)
-        response.workerAddress = zmsg.pop().getData();
-
-      request.destroy();
-      return response;
-    }
-
-    // Didn't get a response within the allowed timeout. Try again, unless we're
-    // out of retries.
-    return sendRequest(request, timeout, retries - 1);
+    request.destroy();
+    String errorMsg = "Alda server is down. To start the server, run `alda up`.";
+    throw new NoResponseException(errorMsg);
   }
 
   public AldaResponse send(int timeout, int retries) throws NoResponseException {

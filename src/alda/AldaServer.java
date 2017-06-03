@@ -399,25 +399,33 @@ public class AldaServer extends AldaProcess {
     String noWorkersYetMsg = "No worker processes are ready yet";
     String workersBusyMsg = "All worker processes are currently busy";
 
-    try {
-      return play(input, history.toString(), null, null, false);
-    } catch (Throwable e) {
-      String error = e.getMessage();
-      if (error != null &&
-          (error.contains(noWorkersYetMsg) || error.contains(workersBusyMsg))
-          && retries > 0) {
-        try {
-          Thread.sleep(BUSY_WORKER_RETRY_INTERVAL);
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-          throw new RuntimeException(ie);
+    // This message is a fallback in the event that we don't get an error
+    // message.
+    String error = "Unknown error trying to play line of REPL input.";
+
+    while (retries >= 0) {
+      try {
+        return play(input, history.toString(), null, null, false);
+      } catch (Throwable e) {
+        String thisError = e.getMessage();
+        if (thisError != null)
+          error = thisError;
+
+        if (error.contains(noWorkersYetMsg) || error.contains(workersBusyMsg)) {
+          try {
+            Thread.sleep(BUSY_WORKER_RETRY_INTERVAL);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(ie);
+          }
+          retries--;
+        } else {
+          throw(e);
         }
-        retries--;
-        return playFromRepl(input, history, from, to, catchExceptions, retries);
-      } else {
-        throw(e);
       }
     }
+
+    throw new RuntimeException(error);
   }
 
 
