@@ -161,9 +161,12 @@ public class AldaServer extends AldaProcess {
     } catch (URISyntaxException e) {
       error(String.format("Unable to fork '%s' into the background; " +
             " got URISyntaxException: %s", e.getInput(), e.getReason()));
+      System.exit(1);
     } catch (IOException e) {
-      error(String.format("An IOException occurred trying to fork a background process: %s",
-            e.getMessage()));
+      error(String.format("An IOException occurred trying to fork a " +
+                          "background process: %s",
+                          e.getMessage()));
+      System.exit(1);
     }
 
     msg("Starting worker processes...");
