@@ -169,7 +169,6 @@ public class AldaRepl {
           } catch (Throwable e) {
             System.err.println("Unable to start server:");
             e.printStackTrace();
-            System.exit(1);
           }
           break;
         case "no":
@@ -184,7 +183,6 @@ public class AldaRepl {
     } catch (IOException e) {
       System.err.println("Error trying to read character:");
       e.printStackTrace();
-      System.exit(1);
     }
     System.out.println();
   }
