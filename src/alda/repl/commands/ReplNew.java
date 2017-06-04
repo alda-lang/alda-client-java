@@ -1,7 +1,11 @@
 
 package alda.repl.commands;
 
+import java.util.Arrays;
+import java.io.IOException;
+
 import alda.AldaServer;
+import alda.Util;
 import alda.AldaResponse.AldaScore;
 import java.util.function.Consumer;
 import jline.console.ConsoleReader;
@@ -23,8 +27,15 @@ public class ReplNew implements ReplCommand {
 
     if (history.length() > 0) {
       // Verify we can delete score
-      if (!ReplLoad.promptOverwrite(history, reader)) {
-        return;
+      try {
+        System.out.println("This action will overwrite the current score. Continue?");
+        if (Util.promptWithChoices(reader, Arrays.asList("yes", "no")) != "yes") {
+          return;
+        }
+      } catch (IOException e) {
+        System.err.println("There was an error reading input.");
+        e.printStackTrace();
+        System.exit(1);
       }
     }
 

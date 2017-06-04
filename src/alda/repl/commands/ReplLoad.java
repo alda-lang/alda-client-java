@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 import java.util.function.Consumer;
 
@@ -45,7 +46,7 @@ public class ReplLoad implements ReplCommand {
    * @args history buffer to modify
    */
   private void loadFile(String args, AldaServer server, StringBuffer history,
-                        Consumer<AldaScore> newInstrument)
+                        ConsoleReader reader, Consumer<AldaScore> newInstrument)
   throws alda.NoResponseException {
     Stream<String> fLines = null;
     boolean error = false;
@@ -82,7 +83,8 @@ public class ReplLoad implements ReplCommand {
 
       if (!error) {
         // Check if we can continue overwrite.
-        if (promptOverwrite(history, reader)){
+        System.out.println("This action will overwrite the current score. Continue?");
+        if (Util.promptWithChoices(reader, Arrays.asList("yes", "no")) == "yes"){
           history.delete(0, history.length());
           history.append(newHistory);
 
@@ -118,26 +120,6 @@ public class ReplLoad implements ReplCommand {
     // Turn ~ into home
     args = args.replaceFirst("^~",System.getProperty("user.home"));
     loadFile(args, server, history, reader, newInstrument);
-  }
-
-  /**
-   * Prompt for overwriting the current contents
-   * @return if true, continue overwite.
-   */
-  public static boolean promptOverwrite(CharSequence seq, ConsoleReader reader) {
-    if (seq.length() == 0 || seq == null) {
-      // Don't worry if there's nothing to overwrite.
-      return true;
-    }
-    try {
-      String confirm = reader.readLine("Action will overwrite current score, continue [y/N]: ");
-      if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
-        return true;
-      }
-      return false;
-    } catch (IOException e) {
-      return false;
-    }
   }
 
   @Override
