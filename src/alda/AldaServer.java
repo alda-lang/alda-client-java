@@ -116,14 +116,15 @@ public class AldaServer extends AldaProcess {
     serverDown(false);
   }
 
-  public void upBg(int numberOfWorkers)
+  // Returns true if starting the server is successful.
+  public boolean upBg(int numberOfWorkers)
     throws InvalidOptionsException, NoResponseException {
     assertNotRemoteHost();
 
     boolean serverAlreadyUp = checkForConnection();
     if (serverAlreadyUp) {
       msg("Server already up.");
-      System.exit(1);
+      return false;
     }
 
     boolean serverAlreadyTryingToStart;
@@ -139,7 +140,7 @@ public class AldaServer extends AldaProcess {
     if (serverAlreadyTryingToStart) {
       msg("There is already a server trying to start on this port. Please " +
           "be patient -- this can take a while.");
-      System.exit(1);
+      return false;
     }
 
     Object[] opts = {"--host", host,
@@ -156,17 +157,17 @@ public class AldaServer extends AldaProcess {
         serverUp();
       } else {
         serverDown();
-        return;
+        return false;
       }
     } catch (URISyntaxException e) {
       error(String.format("Unable to fork '%s' into the background; " +
             " got URISyntaxException: %s", e.getInput(), e.getReason()));
-      System.exit(1);
+      return false;
     } catch (IOException e) {
       error(String.format("An IOException occurred trying to fork a " +
                           "background process: %s",
                           e.getMessage()));
-      System.exit(1);
+      return false;
     }
 
     msg("Starting worker processes...");
@@ -178,7 +179,7 @@ public class AldaServer extends AldaProcess {
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         System.out.println("Thread interrupted.");
-        return;
+        return false;
       }
       AldaRequest req = new AldaRequest(host, port);
       req.command = "status";
@@ -193,6 +194,7 @@ public class AldaServer extends AldaProcess {
     }
 
     ready();
+    return true;
   }
 
   public void upFg(int numberOfWorkers) throws InvalidOptionsException {
@@ -201,15 +203,6 @@ public class AldaServer extends AldaProcess {
     Object[] args = {numberOfWorkers, port, verbose};
 
     Util.callClojureFn("alda.server/start-server!", args);
-  }
-
-  // TODO: rewrite REPL as a client that communicates with a server
-  public void startRepl() throws InvalidOptionsException {
-    assertNotRemoteHost();
-
-    Object[] args = {};
-
-    Util.callClojureFn("alda.repl/start-repl!", args);
   }
 
   public void down() throws NoResponseException {
@@ -236,11 +229,12 @@ public class AldaServer extends AldaProcess {
     }
   }
 
-  public void downUp(int numberOfWorkers)
+  // Returns true if starting the server is successful.
+  public boolean downUp(int numberOfWorkers)
     throws NoResponseException, InvalidOptionsException {
     down();
     System.out.println();
-    upBg(numberOfWorkers);
+    return upBg(numberOfWorkers);
   }
 
   public void status() {
