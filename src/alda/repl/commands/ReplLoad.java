@@ -45,7 +45,8 @@ public class ReplLoad implements ReplCommand {
    * @args history buffer to modify
    */
   private void loadFile(String args, AldaServer server, StringBuffer history,
-                        ConsoleReader reader, Consumer<AldaScore> newInstrument) {
+                        Consumer<AldaScore> newInstrument)
+  throws alda.NoResponseException {
     Stream<String> fLines = null;
     boolean error = false;
 
@@ -70,6 +71,9 @@ public class ReplLoad implements ReplCommand {
       try {
         // TODO: include a jobId, add parsing to job system on the server-side
         res = server.parseRaw(newHistory.toString(), false);
+      } catch (alda.NoResponseException e) {
+        // Let the REPL handle the exception by offering to start the server.
+        throw e;
       } catch (Throwable e) {
         server.error(e.getMessage());
         // Don't change 'history'
@@ -99,7 +103,8 @@ public class ReplLoad implements ReplCommand {
 
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
-                  ConsoleReader reader, Consumer<AldaScore> newInstrument) {
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument)
+  throws alda.NoResponseException {
     if (args.length() == 0) {
         // We will try to load from the last saved file
       if (oldSaveFile() != null && oldSaveFile().length() != 0) {

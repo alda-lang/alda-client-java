@@ -14,8 +14,10 @@ import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
 
 public class AldaServer extends AldaProcess {
-  private static int STARTUP_RETRY_INTERVAL = 250; // ms
-  private static int PLAY_STATUS_INTERVAL = 250; // ms
+  private static final int STARTUP_RETRY_INTERVAL = 250; // ms
+  private static final int STATUS_RETRY_INTERVAL = 200;  // ms
+  private static final int STATUS_RETRIES = 10;
+  private static final int PLAY_STATUS_INTERVAL = 250;   // ms
 
   // Relevant to playing input from the REPL.
   private static final int BUSY_WORKER_TIMEOUT = 10000;      // ms
@@ -50,8 +52,8 @@ public class AldaServer extends AldaProcess {
     }
   }
 
-  public void setQuiet(boolean q) {
-    this.quiet = q;
+  public void setQuiet(boolean quiet) {
+    this.quiet = quiet;
   }
 
   public void msg(String message) {
@@ -114,20 +116,21 @@ public class AldaServer extends AldaProcess {
     serverDown(false);
   }
 
-  public void upBg(int numberOfWorkers)
+  // Returns true if starting the server is successful.
+  public boolean upBg(int numberOfWorkers)
     throws InvalidOptionsException, NoResponseException {
     assertNotRemoteHost();
 
     boolean serverAlreadyUp = checkForConnection();
     if (serverAlreadyUp) {
       msg("Server already up.");
-      System.exit(1);
+      return false;
     }
 
     boolean serverAlreadyTryingToStart;
     try {
       serverAlreadyTryingToStart = SystemUtils.IS_OS_UNIX &&
-                                   AldaClient.checkForExistingServer(this.port);
+                                   AldaClient.checkForExistingServer(port);
     } catch (IOException e) {
       System.out.println("WARNING: Unable to detect whether or not there is " +
                          "already a server running on that port.");
@@ -137,7 +140,7 @@ public class AldaServer extends AldaProcess {
     if (serverAlreadyTryingToStart) {
       msg("There is already a server trying to start on this port. Please " +
           "be patient -- this can take a while.");
-      System.exit(1);
+      return false;
     }
 
     Object[] opts = {"--host", host,
@@ -154,14 +157,17 @@ public class AldaServer extends AldaProcess {
         serverUp();
       } else {
         serverDown();
-        return;
+        return false;
       }
     } catch (URISyntaxException e) {
       error(String.format("Unable to fork '%s' into the background; " +
             " got URISyntaxException: %s", e.getInput(), e.getReason()));
+      return false;
     } catch (IOException e) {
-      error(String.format("An IOException occurred trying to fork a background process: %s",
-            e.getMessage()));
+      error(String.format("An IOException occurred trying to fork a " +
+                          "background process: %s",
+                          e.getMessage()));
+      return false;
     }
 
     msg("Starting worker processes...");
@@ -173,9 +179,9 @@ public class AldaServer extends AldaProcess {
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         System.out.println("Thread interrupted.");
-        return;
+        return false;
       }
-      AldaRequest req = new AldaRequest(this.host, this.port);
+      AldaRequest req = new AldaRequest(host, port);
       req.command = "status";
       AldaResponse res = req.send();
       if (res.body.contains("Server up")) {
@@ -188,6 +194,7 @@ public class AldaServer extends AldaProcess {
     }
 
     ready();
+    return true;
   }
 
   public void upFg(int numberOfWorkers) throws InvalidOptionsException {
@@ -196,15 +203,6 @@ public class AldaServer extends AldaProcess {
     Object[] args = {numberOfWorkers, port, verbose};
 
     Util.callClojureFn("alda.server/start-server!", args);
-  }
-
-  // TODO: rewrite REPL as a client that communicates with a server
-  public void startRepl() throws InvalidOptionsException {
-    assertNotRemoteHost();
-
-    Object[] args = {};
-
-    Util.callClojureFn("alda.repl/start-repl!", args);
   }
 
   public void down() throws NoResponseException {
@@ -216,7 +214,7 @@ public class AldaServer extends AldaProcess {
 
     msg("Stopping Alda server...");
 
-    AldaRequest req = new AldaRequest(this.host, this.port);
+    AldaRequest req = new AldaRequest(host, port);
     req.command = "stop-server";
 
     try {
@@ -231,19 +229,20 @@ public class AldaServer extends AldaProcess {
     }
   }
 
-  public void downUp(int numberOfWorkers)
+  // Returns true if starting the server is successful.
+  public boolean downUp(int numberOfWorkers)
     throws NoResponseException, InvalidOptionsException {
     down();
     System.out.println();
-    upBg(numberOfWorkers);
+    return upBg(numberOfWorkers);
   }
 
   public void status() {
-    AldaRequest req = new AldaRequest(this.host, this.port);
+    AldaRequest req = new AldaRequest(host, port);
     req.command = "status";
 
     try {
-      AldaResponse res = req.send();
+      AldaResponse res = req.send(STATUS_RETRY_INTERVAL, STATUS_RETRIES);
 
       if (res.success) {
         msg(res.body);
@@ -256,7 +255,7 @@ public class AldaServer extends AldaProcess {
   }
 
   public void version() throws NoResponseException {
-    AldaRequest req = new AldaRequest(this.host, this.port);
+    AldaRequest req = new AldaRequest(host, port);
     req.command = "version";
     AldaResponse res = req.send();
     String serverVersion = res.body;
@@ -289,7 +288,7 @@ public class AldaServer extends AldaProcess {
 
     String jobId = UUID.randomUUID().toString();
 
-    AldaRequest req = new AldaRequest(this.host, this.port);
+    AldaRequest req = new AldaRequest(host, port);
     req.command = "play";
     req.body = code;
     req.options = new AldaRequestOptions();
@@ -394,31 +393,39 @@ public class AldaServer extends AldaProcess {
     String noWorkersYetMsg = "No worker processes are ready yet";
     String workersBusyMsg = "All worker processes are currently busy";
 
-    try {
-      return play(input, history.toString(), null, null, false);
-    } catch (Throwable e) {
-      String error = e.getMessage();
-      if (error != null &&
-          (error.contains(noWorkersYetMsg) || error.contains(workersBusyMsg))
-          && retries > 0) {
-        try {
-          Thread.sleep(BUSY_WORKER_RETRY_INTERVAL);
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-          throw new RuntimeException(ie);
+    // This message is a fallback in the event that we don't get an error
+    // message.
+    String error = "Unknown error trying to play line of REPL input.";
+
+    while (retries >= 0) {
+      try {
+        return play(input, history.toString(), null, null, false);
+      } catch (Throwable e) {
+        String thisError = e.getMessage();
+        if (thisError != null)
+          error = thisError;
+
+        if (error.contains(noWorkersYetMsg) || error.contains(workersBusyMsg)) {
+          try {
+            Thread.sleep(BUSY_WORKER_RETRY_INTERVAL);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(ie);
+          }
+          retries--;
+        } else {
+          throw(e);
         }
-        retries--;
-        return playFromRepl(input, history, from, to, catchExceptions, retries);
-      } else {
-        throw(e);
       }
     }
+
+    throw new RuntimeException(error);
   }
 
 
   public AldaResponse playStatus(byte[] workerAddress, String jobId)
     throws NoResponseException {
-    AldaRequest req = new AldaRequest(this.host, this.port);
+    AldaRequest req = new AldaRequest(host, port);
     req.command = "play-status";
     req.workerToUse = workerAddress;
     req.options = new AldaRequestOptions();
@@ -431,7 +438,7 @@ public class AldaServer extends AldaProcess {
    * @return Returns the result of the parse, or null if the parse failed (and no exception was thrown)
    */
   public String parseRaw(String code, boolean parseExceptions) throws NoResponseException {
-    AldaRequest req = new AldaRequest(this.host, this.port);
+    AldaRequest req = new AldaRequest(host, port);
     req.command = "parse";
     req.body = code;
     AldaResponse res = req.send();

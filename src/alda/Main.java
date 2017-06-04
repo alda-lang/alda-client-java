@@ -209,6 +209,9 @@ public class Main {
       String mode;
       String inputType;
 
+      // used for up and downup commands
+      boolean success;
+
       switch (command) {
         case "help":
           jc.usage();
@@ -242,8 +245,8 @@ public class Main {
         case "start-server":
         case "init":
           handleCommandSpecificHelp(jc, "up", startServer);
-          server.upBg(globalOpts.numberOfWorkers);
-          System.exit(0);
+          success = server.upBg(globalOpts.numberOfWorkers);
+          System.exit(success ? 0 : 1);
 
         case "down":
         case "stop-server":
@@ -254,8 +257,8 @@ public class Main {
         case "downup":
         case "restart-server":
           handleCommandSpecificHelp(jc, "restart-server", restartServer);
-          server.downUp(globalOpts.numberOfWorkers);
-          System.exit(0);
+          success = server.downUp(globalOpts.numberOfWorkers);
+          System.exit(success ? 0 : 1);
 
         case "list":
           handleCommandSpecificHelp(jc, "list", list);

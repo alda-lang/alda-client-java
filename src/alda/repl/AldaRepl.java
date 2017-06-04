@@ -19,6 +19,7 @@ import alda.AldaServer;
 import alda.AldaClient;
 import alda.AldaResponse;
 import alda.AldaResponse.AldaScore;
+import alda.Util;
 
 import alda.repl.commands.ReplCommand;
 import alda.repl.commands.ReplCommandManager;
@@ -35,6 +36,8 @@ public class AldaRepl {
   public static final int ASCII_WIDTH = ASCII_ART.substring(0, ASCII_ART.indexOf('\n')).length();
   public static final String HELP_TEXT = "Type :help for a list of available commands.";
   public static final String PROMPT = "> ";
+
+  public static final int DEFAULT_NUMBER_OF_WORKERS = 2;
 
   private AldaServer server;
   private ConsoleReader r;
@@ -152,12 +155,48 @@ public class AldaRepl {
     promptPrefix = "";
   }
 
+  private void offerToStartServer() {
+    System.out.println("The server is down. Start server on port " +
+                       server.port + "?");
+    try {
+      switch (Util.promptWithChoices(r, Arrays.asList("yes", "no", "quit"))) {
+        case "yes":
+          try {
+            System.out.println();
+            server.setQuiet(false);
+            server.upBg(DEFAULT_NUMBER_OF_WORKERS);
+            server.setQuiet(true);
+          } catch (Throwable e) {
+            System.err.println("Unable to start server:");
+            e.printStackTrace();
+          }
+          break;
+        case "no":
+          // do nothing
+          break;
+        case "quit":
+          System.exit(0);
+        default:
+          // this shouldn't happen; if it does, just move on
+          break;
+      }
+    } catch (IOException e) {
+      System.err.println("Error trying to read character:");
+      e.printStackTrace();
+    }
+    System.out.println();
+  }
+
   public void run() {
     System.out.println(ansi().fg(BLUE).a(ASCII_ART).reset());
     System.out.println(centerText(ASCII_WIDTH, AldaClient.version(), CYAN));
     System.out.println(centerText(ASCII_WIDTH, "repl session", CYAN));
 
     System.out.println("\n" + ansi().fg(WHITE).bold().a(HELP_TEXT).reset() + "\n");
+
+    if (!server.checkForConnection()) {
+      offerToStartServer();
+    }
 
     while (true) {
       String input = "";
@@ -199,8 +238,12 @@ public class AldaRepl {
           // pass in empty string if we have no arguments
           String arguments = splitString.length > 1 ? splitString[1] : "";
           // Run the command
-          cmd.act(arguments.trim(), history, server, r, this::setPromptPrefix);
-
+          try {
+            cmd.act(arguments.trim(), history, server, r, this::setPromptPrefix);
+          } catch (alda.NoResponseException e) {
+            System.out.println();
+            offerToStartServer();
+          }
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
@@ -219,6 +262,9 @@ public class AldaRepl {
           if (playResponse != null) {
             this.setPromptPrefix(playResponse.score);
           }
+        } catch (alda.NoResponseException e) {
+          System.out.println();
+          offerToStartServer();
         } catch (Throwable e) {
           server.error(e.getMessage());
           if (verbose) {

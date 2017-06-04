@@ -12,7 +12,8 @@ import jline.console.ConsoleReader;
 public class ReplPlay implements ReplCommand {
 
   public void act(String args, StringBuffer history, AldaServer server,
-                  ConsoleReader reader, Consumer<AldaScore> newInstrument) {
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument)
+  throws alda.NoResponseException {
     // Parse from/to args
     String[] arguments = args.split("\\s+");
     String from = "";
@@ -45,6 +46,9 @@ public class ReplPlay implements ReplCommand {
       server.playFromRepl(history.toString(), "",
                           from.length() > 0 ? from : null,
                           to.length() > 0 ? to : null, false);
+    } catch (alda.NoResponseException e) {
+      // Let the REPL handle the exception by offering to start the server.
+      throw e;
     } catch (Throwable e) {
       server.error(e.getMessage());
     }

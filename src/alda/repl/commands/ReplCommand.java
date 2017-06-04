@@ -32,7 +32,8 @@ public interface ReplCommand {
    *   The new current instrument will be passed in as a string.
    */
   public void act(String args, StringBuffer history, AldaServer server,
-                  ConsoleReader reader, Consumer<AldaScore> newInstrument);
+                  ConsoleReader reader, Consumer<AldaScore> newInstrument)
+  throws alda.NoResponseException;
 
   /**
    * Returns the documentation summary of this ReplCommand
