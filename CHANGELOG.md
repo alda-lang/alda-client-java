@@ -8,6 +8,10 @@
   We also offer to start the server *after* the REPL has started, if the server
   fails to respond, e.g. if it gets shut down from outside of the REPL.
 
+* Added a confirmation prompt when running the `:new`, `:load` or `:quit`
+  commands in the REPL. This is to avoid accidentally losing unsaved changes to
+  your score.
+
 * Fixed miscellaneous bugs in the REPL related to sending requests to the server
   and receiving responses. This behavior is more reliable now.
 
