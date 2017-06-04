@@ -17,7 +17,7 @@ public  class ReplQuit implements ReplCommand {
     if (history.length() == 0 ||
         Util.promptWithChoices(
           reader,
-          "Are you sure you want to quit (destroying unsaved changes)?",
+          "You have unsaved changes. Are you sure you want to quit?",
           "yes", "no").equals("yes")) {
       // Bye! =)
       System.exit(0);
