@@ -1,9 +1,12 @@
 
 package alda.repl.commands;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.function.Consumer;
 
 import alda.AldaServer;
-import java.util.function.Consumer;
 import alda.AldaResponse.AldaScore;
 import jline.console.ConsoleReader;
 
@@ -14,6 +17,9 @@ import jline.console.ConsoleReader;
  * such as :help, :load, or :play
  */
 public interface ReplCommand {
+
+  public static final Set<String> YES_ALIASES = new HashSet<>(Arrays.asList("yes", "true", "on", "+", "y"));
+  public static final Set<String> NO_ALIASES = new HashSet<>(Arrays.asList("no", "false", "off", "-", "n"));
 
   /**
    * Runs this ReplCommand given the selected history.

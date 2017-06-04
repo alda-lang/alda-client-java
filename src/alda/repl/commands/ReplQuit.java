@@ -1,6 +1,7 @@
 package alda.repl.commands;
 
 import alda.AldaServer;
+import alda.Util;
 import alda.AldaResponse.AldaScore;
 import java.util.function.Consumer;
 import jline.console.ConsoleReader;
@@ -13,8 +14,14 @@ public  class ReplQuit implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument) {
-    // Bye! =)
-    System.exit(0);
+    if (history.length() == 0 ||
+        Util.promptWithChoices(
+          reader,
+          "You have unsaved changes. Are you sure you want to quit?",
+          "yes", "no").equals("yes")) {
+      // Bye! =)
+      System.exit(0);
+    }
   }
   @Override
   public String docSummary() {

@@ -18,7 +18,7 @@
                   [us.bpsm/edn-java                 "0.4.6"]
                   [com.jcabi/jcabi-manifests        "1.1"]
                   [org.zeromq/jeromq                "0.4.0"]
-                  [jline                            "2.12.1"]])
+                  [jline                            "2.14.3"]])
 
 (require '[adzerk.bootlaces         :refer :all]
          '[radicalzephyr.boot-junit :refer (junit)])

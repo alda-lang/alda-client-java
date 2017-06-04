@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
+import jline.console.UserInterruptException;
 
 import org.fusesource.jansi.AnsiConsole;
 import org.fusesource.jansi.Ansi.Color;
@@ -57,6 +58,7 @@ public class AldaRepl {
     manager = new ReplCommandManager();
     try {
       r = new ConsoleReader();
+	  r.setHandleUserInterrupt(true);
     } catch (IOException e) {
       System.err.println("An error was detected when we tried to read a line.");
       e.printStackTrace();
@@ -207,7 +209,9 @@ public class AldaRepl {
         System.err.println("An error was detected when we tried to read a line.");
         e.printStackTrace();
         System.exit(1);
-      }
+      } catch (UserInterruptException e) {
+		input = ":quit";
+	  }
 
       // Check for quick quit keywords. input is null when we get EOF
       if (input == null || input.matches("^:?(quit|exit|bye).*")) {
@@ -243,7 +247,17 @@ public class AldaRepl {
           } catch (alda.NoResponseException e) {
             System.out.println();
             offerToStartServer();
-          }
+          } catch (UserInterruptException e) {
+			try {
+			  // Quit the repl
+			  cmd.act(":quit", history, server, r, this::setPromptPrefix);
+			} catch (Exception ex) {
+			  // Give up.
+			  System.err.println("An unknown error occurred!");
+			  ex.printStackTrace();
+			  System.exit(1);
+			}
+		  }
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }

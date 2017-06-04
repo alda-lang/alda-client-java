@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import alda.AldaServer;
+import alda.Util;
 import alda.AldaResponse.AldaScore;
 import java.util.function.Consumer;
 import jline.console.ConsoleReader;
@@ -51,12 +52,16 @@ public class ReplSave implements ReplCommand {
       }
 
       try {
-        Files.write(Paths.get(args), history.toString().getBytes(), StandardOpenOption.CREATE_NEW);
+        Files.write(Paths.get(args), history.toString().getBytes(),
+                    StandardOpenOption.CREATE_NEW);
         setOldSaveFile(args);
       } catch (FileAlreadyExistsException e) {
-        String confirm = reader.readLine("File already present, overwrite? [y/n]: ");
-        if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
-          Files.write(Paths.get(args), history.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        if (Util.promptWithChoices(reader,
+                                            "File already present, overwrite?",
+                                            "yes", "no").equals("yes")) {
+          Files.write(Paths.get(args), history.toString().getBytes(),
+                      StandardOpenOption.CREATE,
+                      StandardOpenOption.TRUNCATE_EXISTING);
           setOldSaveFile(args);
         }
       }

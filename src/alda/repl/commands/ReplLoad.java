@@ -4,12 +4,13 @@ package alda.repl.commands;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.LinkOption;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.FileAlreadyExistsException;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 import java.util.function.Consumer;
 
@@ -24,6 +25,9 @@ import jline.console.ConsoleReader;
  * Takes a filename as a paramter.
  */
 public class ReplLoad implements ReplCommand {
+
+  public static final String OVERWRITE_WARNING =
+    "This action will overwrite the current score. Continue?";
 
   private ReplCommandManager cmdManager;
 
@@ -45,12 +49,21 @@ public class ReplLoad implements ReplCommand {
    * @args history buffer to modify
    */
   private void loadFile(String args, AldaServer server, StringBuffer history,
-                        Consumer<AldaScore> newInstrument)
+                        ConsoleReader reader, Consumer<AldaScore> newInstrument)
   throws alda.NoResponseException {
     Stream<String> fLines = null;
     boolean error = false;
+
+    Path path = Paths.get(args);
+
+    // check if file exists
+    if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+      System.err.println("The file '" + args + "' was not found.");
+      return;
+    }
+
     try {
-      fLines = Files.lines(Paths.get(args));
+      fLines = Files.lines(path);
       StringBuffer newHistory = new StringBuffer();
       fLines.forEach(x -> {
           newHistory.append(x);
@@ -72,14 +85,18 @@ public class ReplLoad implements ReplCommand {
       }
 
       if (!error) {
-        history.delete(0, history.length());
-        history.append(newHistory);
+        // Check if we can continue overwrite.
+        if (Util.promptWithChoices(reader, OVERWRITE_WARNING,
+                                            "yes", "no").equals("yes")){
+          history.delete(0, history.length());
+          history.append(newHistory);
 
-        // Set new prompt string if possible
-        newInstrument.accept(AldaResponse.fromJsonScore(res));
+          // Set new prompt string if possible
+          newInstrument.accept(AldaResponse.fromJsonScore(res));
 
-        // Save the loaded filename to shorten :save/:loads
-        setOldSaveFile(args);
+          // Save the loaded filename to shorten :save/:loads
+          setOldSaveFile(args);
+        }
       }
     } catch (IOException|UncheckedIOException e) {
       System.err.println("There was an error reading '" + args + "'");
@@ -94,20 +111,20 @@ public class ReplLoad implements ReplCommand {
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
   throws alda.NoResponseException {
     if (args.length() == 0) {
-      // We will try to load from the last saved file
-        if (oldSaveFile() != null && oldSaveFile().length() != 0) {
-          // Just assume the user typed in the last given file.
-          loadFile(oldSaveFile(), server, history, newInstrument);
-        } else {
-          usage();
-        }
-        return;
+        // We will try to load from the last saved file
+      if (oldSaveFile() != null && oldSaveFile().length() != 0) {
+        // Just assume the user typed in the last given file.
+        loadFile(oldSaveFile(), server, history, reader, newInstrument);
+      } else {
+        usage();
+      }
+      return;
     }
     // Turn ~ into home
     args = args.replaceFirst("^~",System.getProperty("user.home"));
-    loadFile(args, server, history, newInstrument);
-
+    loadFile(args, server, history, reader, newInstrument);
   }
+
   @Override
   public String docSummary() {
     return "Loads an Alda score into the current REPL session.";
