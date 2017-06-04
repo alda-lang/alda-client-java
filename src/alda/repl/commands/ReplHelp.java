@@ -57,9 +57,8 @@ public class ReplHelp implements ReplCommand {
       System.out.println(cmd.docSummary());
       if (cmd.docDetails() != "") {
         System.out.println();
-        for (String line : cmd.docDetails().split("\n")) {
-          System.out.println("   " + line);
-        }
+        System.out.println(cmd.docDetails());
+        System.out.println();
       }
     } else {
       System.err.println("No documentation was found for '" + args + "'.");
