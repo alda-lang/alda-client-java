@@ -79,13 +79,13 @@ public final class Util {
 
   /**
    * Small wrapper to make prompts easier to output.
-   * WARNING: This exits the whole program if any read error is given.
+   * WARNING: This exits the whole program if any read error is given (and is unchecked).
    * @param r The console reader to input on
    * @param choices A varargs of choices to give
    * @param prompt The prompt to display above the choice.
    * @return The choice selected by the user.
    */
-  public static String uncheckedPromptWithChoices(ConsoleReader r, String prompt, String... choices) {
+  public static String promptWithChoices(ConsoleReader r, String prompt, String... choices) {
     try {
       System.out.println(prompt);
       return promptWithChoices(r, Arrays.asList(choices));

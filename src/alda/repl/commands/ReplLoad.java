@@ -86,8 +86,8 @@ public class ReplLoad implements ReplCommand {
 
       if (!error) {
         // Check if we can continue overwrite.
-        if (Util.uncheckedPromptWithChoices(reader, OVERWRITE_WARNING,
-                                            "yes", "no") == "yes"){
+        if (Util.promptWithChoices(reader, OVERWRITE_WARNING,
+                                            "yes", "no").equals("yes")){
           history.delete(0, history.length());
           history.append(newHistory);
 

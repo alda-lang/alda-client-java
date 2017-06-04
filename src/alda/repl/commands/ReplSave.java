@@ -56,9 +56,9 @@ public class ReplSave implements ReplCommand {
                     StandardOpenOption.CREATE_NEW);
         setOldSaveFile(args);
       } catch (FileAlreadyExistsException e) {
-        if (Util.uncheckedPromptWithChoices(reader,
+        if (Util.promptWithChoices(reader,
                                             "File already present, overwrite?",
-                                            "yes", "no") == "yes") {
+                                            "yes", "no").equals("yes")) {
           Files.write(Paths.get(args), history.toString().getBytes(),
                       StandardOpenOption.CREATE,
                       StandardOpenOption.TRUNCATE_EXISTING);

@@ -27,8 +27,8 @@ public class ReplNew implements ReplCommand {
 
     if (history.length() > 0) {
       // Verify we can delete score
-      if (Util.uncheckedPromptWithChoices(reader, ReplLoad.OVERWRITE_WARNING,
-                                          "yes", "no") != "yes") {
+      if (!Util.promptWithChoices(reader, ReplLoad.OVERWRITE_WARNING,
+                                          "yes", "no").equals("yes")) {
         return;
       }
     }
