@@ -77,6 +77,26 @@ public final class Util {
     return m.get(c);
   }
 
+  /**
+   * Small wrapper to make prompts easier to output.
+   * WARNING: This exits the whole program if any read error is given.
+   * @param r The console reader to input on
+   * @param choices A varargs of choices to give
+   * @param prompt The prompt to display above the choice.
+   * @return The choice selected by the user.
+   */
+  public static String uncheckedPromptWithChoices(ConsoleReader r, String prompt, String... choices) {
+    try {
+      System.out.println(prompt);
+      return promptWithChoices(r, Arrays.asList(choices));
+    } catch (IOException e) {
+      System.err.println("There was an error reading input!");
+      e.printStackTrace();
+      System.exit(1);
+    }
+    return null;
+  }
+
   public static boolean promptForConfirmation(String prompt) {
     Console console = System.console();
     if (System.console() != null) {

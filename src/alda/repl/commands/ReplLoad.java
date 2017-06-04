@@ -26,6 +26,9 @@ import jline.console.ConsoleReader;
  */
 public class ReplLoad implements ReplCommand {
 
+  public static final String OVERWRITE_WARNING =
+    "This action will overwrite the current score. Continue?";
+
   private ReplCommandManager cmdManager;
 
   public ReplLoad(ReplCommandManager m) {
@@ -83,8 +86,8 @@ public class ReplLoad implements ReplCommand {
 
       if (!error) {
         // Check if we can continue overwrite.
-        System.out.println("This action will overwrite the current score. Continue?");
-        if (Util.promptWithChoices(reader, Arrays.asList("yes", "no")) == "yes"){
+        if (Util.uncheckedPromptWithChoices(reader, OVERWRITE_WARNING,
+                                            "yes", "no") == "yes"){
           history.delete(0, history.length());
           history.append(newHistory);
 

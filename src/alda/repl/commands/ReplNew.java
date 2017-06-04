@@ -27,15 +27,9 @@ public class ReplNew implements ReplCommand {
 
     if (history.length() > 0) {
       // Verify we can delete score
-      try {
-        System.out.println("This action will overwrite the current score. Continue?");
-        if (Util.promptWithChoices(reader, Arrays.asList("yes", "no")) != "yes") {
-          return;
-        }
-      } catch (IOException e) {
-        System.err.println("There was an error reading input.");
-        e.printStackTrace();
-        System.exit(1);
+      if (Util.uncheckedPromptWithChoices(reader, ReplLoad.OVERWRITE_WARNING,
+                                          "yes", "no") != "yes") {
+        return;
       }
     }
 
