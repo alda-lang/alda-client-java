@@ -3,6 +3,7 @@ package alda.repl.commands;
 
 import alda.AldaServer;
 import alda.AldaResponse.AldaScore;
+import java.util.Collections;
 import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
@@ -29,11 +30,22 @@ public class ReplHelp implements ReplCommand {
                   ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     args = args.trim();
 
+    // the length of the longest command
+    int maxKeyLength = cmdManager.values()
+                                 .stream()
+                                 .mapToInt(cmd -> cmd.key().length())
+                                 .max()
+                                 .getAsInt();
+
     // Print out default help info
     if (args.length() == 0) {
       System.out.println(HELP_HEADER);
       for (ReplCommand c : cmdManager.values()) {
-        System.out.println("    :" + c.key() + "\t" + c.docSummary()
+        String key = c.key();
+        int spaces = maxKeyLength - key.length() + 2;
+        String spacing = String.join("", Collections.nCopies(spaces, " "));
+
+        System.out.println("    :" + key + spacing + c.docSummary()
                            + (c.docDetails() != "" ? " (*)" : ""));
       }
       return;
