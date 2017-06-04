@@ -23,6 +23,8 @@ public class AldaServer extends AldaProcess {
   private static final int BUSY_WORKER_TIMEOUT = 10000;      // ms
   private static final int BUSY_WORKER_RETRY_INTERVAL = 500; // ms
 
+  private static final int PAUSE_BEFORE_RESTARTING_SERVER = 500; // ms
+
   public AldaServer(String host, int port, int timeout, boolean verbose, boolean quiet) {
     this.host = normalizeHost(host);
     this.port = port;
@@ -233,6 +235,12 @@ public class AldaServer extends AldaProcess {
   public boolean downUp(int numberOfWorkers)
     throws NoResponseException, InvalidOptionsException {
     down();
+    try {
+      Thread.sleep(PAUSE_BEFORE_RESTARTING_SERVER);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      System.out.println("Thread interrupted.");
+    }
     System.out.println();
     return upBg(numberOfWorkers);
   }

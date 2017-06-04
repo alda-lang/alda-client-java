@@ -44,19 +44,19 @@ public class ReplHelp implements ReplCommand {
     if (args.length() == 0) {
       System.out.println(HELP_HEADER);
 
-      List<ReplCommand> sortedCmds = cmdManager.values()
-                                               .stream()
-                                               .sorted((cmd1, cmd2) -> cmd1.key().compareTo(cmd2.key()))
-                                               .collect(Collectors.toList());
-
-      for (ReplCommand c : sortedCmds) {
-        String key = c.key();
-        int spaces = maxKeyLength - key.length() + 2;
-        String spacing = String.join("", Collections.nCopies(spaces, " "));
-
-        System.out.println("    :" + key + spacing + c.docSummary()
-                           + (c.docDetails() != "" ? " (*)" : ""));
-      }
+      cmdManager
+        .values()
+        .stream()
+        .sorted((cmd1, cmd2) -> cmd1.key().compareTo(cmd2.key()))
+        .forEach(cmd -> {
+          String key = cmd.key();
+          int numberOfSpaces = maxKeyLength - key.length() + 2;
+          List<String> spaces = Collections.nCopies(numberOfSpaces, " ");
+          String spacing = String.join("", spaces);
+          System.out.println("    :" + key + spacing +
+                             cmd.docSummary() +
+                             (cmd.docDetails() != "" ? " (*)" : ""));
+        });
 
       System.out.println();
 

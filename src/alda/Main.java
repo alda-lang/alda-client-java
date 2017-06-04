@@ -273,8 +273,7 @@ public class Main {
         case "version":
           handleCommandSpecificHelp(jc, "version", version);
           System.out.println("Client version: " + AldaClient.version());
-          System.out.println();
-          System.out.println("Server version:");
+          System.out.print("Server version: ");
           server.version();
           System.exit(0);
 
