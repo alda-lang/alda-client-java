@@ -203,15 +203,6 @@ public class AldaServer extends AldaProcess {
     Util.callClojureFn("alda.server/start-server!", args);
   }
 
-  // TODO: rewrite REPL as a client that communicates with a server
-  public void startRepl() throws InvalidOptionsException {
-    assertNotRemoteHost();
-
-    Object[] args = {};
-
-    Util.callClojureFn("alda.repl/start-repl!", args);
-  }
-
   public void down() throws NoResponseException {
     boolean serverAlreadyDown = !checkForConnection();
     if (serverAlreadyDown) {
