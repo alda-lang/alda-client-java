@@ -1,12 +1,25 @@
 # CHANGELOG
 
-## Unreleased
+## 0.3.0 (2017-06-05)
+
+This release adds a bunch of features and improvements to the new, faster Alda
+REPL. Thanks to [jgkamat] for helping me implement all this stuff!
+
+* Added 6 new REPL commands, each equivalent to its command-line counterpart:
+
+  * `:status` - display the status of the server
+  * `:list` - list running Alda processes
+  * `:version` - display Alda client + server versions
+  * `:down` - stop the server
+  * `:up` - start the server
+  * `:downup` - restart the server
 
 * When starting the Alda REPL, we now check to see if there is an Alda server
   running. If there is not, then we offer to start one for you.
 
-  We also offer to start the server *after* the REPL has started, if the server
-  fails to respond, e.g. if it gets shut down from outside of the REPL.
+  We also offer to start the server *after* the REPL has started, in the event
+  that the server fails to respond, e.g. if it gets shut down from outside of
+  the REPL.
 
 * Added a confirmation prompt when running the `:new`, `:load` or `:quit`
   commands in the REPL. This is to avoid accidentally losing unsaved changes to
