@@ -3,8 +3,11 @@ package alda.repl.commands;
 
 import alda.AldaServer;
 import alda.AldaResponse.AldaScore;
+
+import java.util.List;
 import java.util.Collections;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import jline.console.ConsoleReader;
 
 /**
@@ -40,7 +43,13 @@ public class ReplHelp implements ReplCommand {
     // Print out default help info
     if (args.length() == 0) {
       System.out.println(HELP_HEADER);
-      for (ReplCommand c : cmdManager.values()) {
+
+      List<ReplCommand> sortedCmds = cmdManager.values()
+                                               .stream()
+                                               .sorted((cmd1, cmd2) -> cmd1.key().compareTo(cmd2.key()))
+                                               .collect(Collectors.toList());
+
+      for (ReplCommand c : sortedCmds) {
         String key = c.key();
         int spaces = maxKeyLength - key.length() + 2;
         String spacing = String.join("", Collections.nCopies(spaces, " "));
@@ -48,6 +57,9 @@ public class ReplHelp implements ReplCommand {
         System.out.println("    :" + key + spacing + c.docSummary()
                            + (c.docDetails() != "" ? " (*)" : ""));
       }
+
+      System.out.println();
+
       return;
     }
 
