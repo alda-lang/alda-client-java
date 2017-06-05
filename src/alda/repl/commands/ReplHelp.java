@@ -55,7 +55,7 @@ public class ReplHelp implements ReplCommand {
           String spacing = String.join("", spaces);
           System.out.println("    :" + key + spacing +
                              cmd.docSummary() +
-                             (cmd.docDetails() != "" ? " (*)" : ""));
+                             (cmd.hasDocDetails() ? " (*)" : ""));
         });
 
       System.out.println();

@@ -52,6 +52,11 @@ public interface ReplCommand {
     return "";
   }
 
+  public default boolean hasDocDetails() {
+    String docDetails = docDetails();
+    return docDetails != null && !docDetails.isEmpty();
+  }
+
   /**
    * Prints usage information for this command.
    * Useful when this command encounters an error

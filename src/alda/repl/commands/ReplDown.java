@@ -8,8 +8,6 @@ import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
 public class ReplDown implements ReplCommand {
-  public ReplDown() {}
-
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)

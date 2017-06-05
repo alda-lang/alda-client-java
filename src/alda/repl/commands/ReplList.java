@@ -10,8 +10,6 @@ import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
 public class ReplList implements ReplCommand {
-  public ReplList() {}
-
   private static int LIST_PROCESSES_TIMEOUT = 5000;
 
   @Override

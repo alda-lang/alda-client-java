@@ -9,8 +9,6 @@ import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
 public class ReplUp implements ReplCommand {
-  public ReplUp() {}
-
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)

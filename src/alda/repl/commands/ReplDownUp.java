@@ -9,8 +9,6 @@ import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
 public class ReplDownUp implements ReplCommand {
-  public ReplDownUp() {}
-
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
