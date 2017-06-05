@@ -3,7 +3,11 @@ package alda.repl.commands;
 
 import alda.AldaServer;
 import alda.AldaResponse.AldaScore;
+
+import java.util.List;
+import java.util.Collections;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import jline.console.ConsoleReader;
 
 /**
@@ -29,13 +33,33 @@ public class ReplHelp implements ReplCommand {
                   ConsoleReader reader, Consumer<AldaScore> newInstrument) {
     args = args.trim();
 
+    // the length of the longest command
+    int maxKeyLength = cmdManager.values()
+                                 .stream()
+                                 .mapToInt(cmd -> cmd.key().length())
+                                 .max()
+                                 .getAsInt();
+
     // Print out default help info
     if (args.length() == 0) {
       System.out.println(HELP_HEADER);
-      for (ReplCommand c : cmdManager.values()) {
-        System.out.println("    :" + c.key() + "\t" + c.docSummary()
-                           + (c.docDetails() != "" ? " (*)" : ""));
-      }
+
+      cmdManager
+        .values()
+        .stream()
+        .sorted((cmd1, cmd2) -> cmd1.key().compareTo(cmd2.key()))
+        .forEach(cmd -> {
+          String key = cmd.key();
+          int numberOfSpaces = maxKeyLength - key.length() + 2;
+          List<String> spaces = Collections.nCopies(numberOfSpaces, " ");
+          String spacing = String.join("", spaces);
+          System.out.println("    :" + key + spacing +
+                             cmd.docSummary() +
+                             (cmd.hasDocDetails() ? " (*)" : ""));
+        });
+
+      System.out.println();
+
       return;
     }
 
@@ -45,9 +69,8 @@ public class ReplHelp implements ReplCommand {
       System.out.println(cmd.docSummary());
       if (cmd.docDetails() != "") {
         System.out.println();
-        for (String line : cmd.docDetails().split("\n")) {
-          System.out.println("   " + line);
-        }
+        System.out.println(cmd.docDetails());
+        System.out.println();
       }
     } else {
       System.err.println("No documentation was found for '" + args + "'.");

@@ -23,15 +23,23 @@ public class ReplCommandManager {
     // To see the actual command implemnetations, see Repl*.java (for each command)
 
     // Temp array to store commands so we can iterate over them later
-    ReplCommand[] cmds = {new ReplPlay(),
-                          new ReplQuit(),
-                          new ReplScore(),
-                          new ReplMap(),
-                          new ReplDebug(),
-                          new ReplNew(this),
-                          new ReplLoad(this),
-                          new ReplSave(this),
-                          new ReplHelp(this)};
+    ReplCommand[] cmds = {
+      new ReplDebug(),
+      new ReplDown(),
+      new ReplDownUp(),
+      new ReplHelp(this),
+      new ReplList(),
+      new ReplLoad(this),
+      new ReplMap(),
+      new ReplNew(this),
+      new ReplPlay(),
+      new ReplQuit(),
+      new ReplSave(this),
+      new ReplScore(),
+      new ReplStatus(),
+      new ReplUp(),
+      new ReplVersion()
+    };
 
     for (ReplCommand c : cmds) {
       commands.put(c.key(), c);
