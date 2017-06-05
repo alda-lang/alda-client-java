@@ -248,16 +248,16 @@ public class AldaRepl {
             System.out.println();
             offerToStartServer();
           } catch (UserInterruptException e) {
-			try {
-			  // Quit the repl
-			  cmd.act(":quit", history, server, r, this::setPromptPrefix);
-			} catch (Exception ex) {
-			  // Give up.
-			  System.err.println("An unknown error occurred!");
-			  ex.printStackTrace();
-			  System.exit(1);
-			}
-		  }
+            try {
+              // Quit the repl
+              cmd.act(":quit", history, server, r, this::setPromptPrefix);
+            } catch (Exception ex) {
+              // Give up.
+              System.err.println("An unknown error occurred!");
+              ex.printStackTrace();
+              System.exit(1);
+            }
+          }
         } else {
           System.err.println("No command '" + splitString[0] + "' was found");
         }
