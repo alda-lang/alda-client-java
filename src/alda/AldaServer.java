@@ -100,22 +100,22 @@ public class AldaServer extends AldaProcess {
   private final String CHECKMARK = "\u2713";
   private final String X = "\u2717";
 
-  private void ready() {
+  private void announceReady() {
     msg(ansi().a("Ready ").fg(GREEN).a(CHECKMARK).reset().toString());
   }
 
-  private void serverUp() {
+  private void announceServerUp() {
     msg(ansi().a("Server up ").fg(GREEN).a(CHECKMARK).reset().toString());
   }
 
-  private void serverDown(boolean isGood) {
+  private void announceServerDown(boolean isGood) {
     Color color = isGood ? GREEN : RED;
     String glyph = isGood ? CHECKMARK : X;
     msg(ansi().a("Server down ").fg(color).a(glyph).reset().toString());
   }
 
-  private void serverDown() {
-    serverDown(false);
+  private void announceServerDown() {
+    announceServerDown(false);
   }
 
   // Returns true if starting the server is successful.
@@ -156,9 +156,9 @@ public class AldaServer extends AldaProcess {
 
       boolean serverUp = waitForConnection();
       if (serverUp) {
-        serverUp();
+        announceServerUp();
       } else {
-        serverDown();
+        announceServerDown();
         return false;
       }
     } catch (URISyntaxException e) {
@@ -195,7 +195,7 @@ public class AldaServer extends AldaProcess {
       }
     }
 
-    ready();
+    announceReady();
     return true;
   }
 
@@ -222,12 +222,12 @@ public class AldaServer extends AldaProcess {
     try {
       AldaResponse res = req.send();
       if (res.success) {
-        serverDown(true);
+        announceServerDown(true);
       } else {
         throw new NoResponseException("Failed to stop server.");
       }
     } catch (NoResponseException e) {
-      serverDown(true);
+      announceServerDown(true);
     }
   }
 
@@ -258,7 +258,7 @@ public class AldaServer extends AldaProcess {
         error(res.body);
       }
     } catch (NoResponseException e) {
-      serverDown();
+      announceServerDown();
     }
   }
 
@@ -454,7 +454,7 @@ public class AldaServer extends AldaProcess {
         error(res.body);
       }
     } catch (NoResponseException e) {
-      serverDown();
+      announceServerDown();
     }
   }
 
