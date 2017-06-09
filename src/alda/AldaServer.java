@@ -441,6 +441,23 @@ public class AldaServer extends AldaProcess {
     return req.send();
   }
 
+  public void stop() {
+    AldaRequest req = new AldaRequest(host, port);
+    req.command = "stop-playback";
+
+    try {
+      AldaResponse res = req.send();
+
+      if (res.success) {
+        msg(res.body);
+      } else {
+        error(res.body);
+      }
+    } catch (NoResponseException e) {
+      serverDown();
+    }
+  }
+
   /**
    * Raw parsing function
    * @return Returns the result of the parse, or null if the parse failed (and no exception was thrown)
