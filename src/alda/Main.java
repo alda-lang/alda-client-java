@@ -123,6 +123,9 @@ public class Main {
     public String to;
   }
 
+  @Parameters(commandDescription = "Stop playback")
+  private static class CommandStop extends AldaCommand {}
+
   @Parameters(commandDescription = "Display the result of parsing Alda code")
   private static class CommandParse extends AldaCommand {
     @Parameter(names = {"-f", "--file"},
@@ -157,6 +160,7 @@ public class Main {
     CommandStatus        status        = new CommandStatus();
     CommandVersion       version       = new CommandVersion();
     CommandPlay          play          = new CommandPlay();
+    CommandStop          stop          = new CommandStop();
     CommandParse         parse         = new CommandParse();
 
     JCommander jc = new JCommander(globalOpts);
@@ -179,6 +183,7 @@ public class Main {
     jc.addCommand("version", version);
 
     jc.addCommand("play", play);
+    jc.addCommand("stop", stop, "stop-playback");
     jc.addCommand("parse", parse);
 
     try {
@@ -296,6 +301,12 @@ public class Main {
                                   "of a string, file, or STDIN.");
           }
           System.exit(0);
+
+        case "stop":
+        case "stop-playback":
+            handleCommandSpecificHelp(jc, "stop", stop);
+            server.stop();
+            break;
 
         case "parse":
           handleCommandSpecificHelp(jc, "parse", parse);

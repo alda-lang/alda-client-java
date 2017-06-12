@@ -1,4 +1,3 @@
-
 package alda.repl.commands;
 
 import java.util.Map;
@@ -10,7 +9,7 @@ import alda.AldaServer;
 
 /**
  * Class to manage and store all ReplCommands.
- * The ReplHelp objecct uses this to generate it's list of documentation.
+ * The ReplHelp object uses this to generate it's list of documentation.
  */
 public class ReplCommandManager {
 
@@ -36,6 +35,7 @@ public class ReplCommandManager {
       new ReplQuit(),
       new ReplSave(this),
       new ReplScore(),
+      new ReplStop(),
       new ReplStatus(),
       new ReplUp(),
       new ReplVersion()
