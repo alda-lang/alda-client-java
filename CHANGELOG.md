@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.3.1 (2017-06-11)
+
+* Added an `alda stop` command which stops playback.
+
+* Added a corresponding `:stop` command in the Alda REPL.
+
 ## 0.3.0 (2017-06-05)
 
 This release adds a bunch of features and improvements to the new, faster Alda
