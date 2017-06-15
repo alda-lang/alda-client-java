@@ -200,6 +200,26 @@ public final class Util {
     }
   }
 
+  // Helper method to move files around, handling exceptions
+  public static boolean moveFile(File oldFile, File newFile) {
+    boolean success = false;
+    Exception toSave = null;
+    try {
+      success = oldFile.renameTo(newFile);
+    } catch (SecurityException e) {
+      success = false;
+      toSave = e;
+    } finally {
+      if (!success) {
+        System.err.println("There was an error copying '" + oldFile + "' to '" + newFile +  "'");
+        if (toSave != null)
+          toSave.printStackTrace();
+        return false;
+      }
+      return true;
+    }
+  }
+
   public static String readFile(File file) throws IOException {
     return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
   }
