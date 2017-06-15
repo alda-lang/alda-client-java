@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.HttpURLConnection;
@@ -182,7 +181,7 @@ public final class Util {
       return sb.toString();
   }
 
-  public static void downloadFile(String url, String path) {
+  public static void downloadFile(String url, String path) throws IOException {
     BufferedInputStream in = null;
     FileOutputStream fout = null;
     try {
@@ -194,27 +193,10 @@ public final class Util {
       while ((count = in.read(data, 0, 1024)) != -1) {
         fout.write(data, 0, count);
       }
-    } catch (MalformedURLException e) {
-      System.err.println("An error occured while downloading a file (1).");
-      e.printStackTrace();
-    } catch (IOException e) {
-      System.err.println("An error occured while downloading a file (2).");
-      e.printStackTrace();
-    }finally {
+    } finally {
       // Close file IO's
-      try {
-        if (in != null) {
-          in.close();
-        }
-        if (fout != null) {
-          fout.close();
-        }
-      } catch (IOException e) {
-        // We can't do anything.
-        System.err.println("A critical error occured while downoading a file (3).");
-        e.printStackTrace();
-        return;
-      }
+      if (in != null) in.close();
+      if (fout != null) fout.close();
     }
   }
 

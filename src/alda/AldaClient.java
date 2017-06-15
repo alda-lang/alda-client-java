@@ -83,12 +83,20 @@ public class AldaClient {
 
     System.out.println("Downloading " + downloadURL + "...");
 
-    // Download file from downloadURL to programPath
-    Util.downloadFile(downloadURL, programPath);
+    try {
+      // Download file from downloadURL to programPath
+      Util.downloadFile(downloadURL, programPath);
+    } catch (IOException e) {
+      System.err.println("Error while downloading file:");
+      e.printStackTrace();
+      return;
+    }
+
     // set as executable if on UNIX
     if (SystemUtils.IS_OS_UNIX) {
       new File(programPath).setExecutable(true);
     }
+
     System.out.println();
     System.out.println("Updated alda " + clientVersion + " => " + latestTag + ".");
     System.out.println("If you have any currently running servers, you may want to restart them so that they are running the latest version.");

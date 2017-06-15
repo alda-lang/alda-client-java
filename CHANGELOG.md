@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+* Fixed a bug where if an error occurs while trying to download a new version of
+  Alda, the client would incorrectly report that the update was successful.
+
 ## 0.3.1 (2017-06-11)
 
 * Added an `alda stop` command which stops playback.
