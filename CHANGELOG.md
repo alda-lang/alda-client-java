@@ -1,9 +1,13 @@
 # CHANGELOG
 
-## Unreleased
+## 0.3.2 (2017-06-17)
 
 * Fixed a bug where if an error occurs while trying to download a new version of
   Alda, the client would incorrectly report that the update was successful.
+
+* Fixed a bug where, when reading Alda code from STDIN, newlines were omitted.
+  This could break scores in some cases, e.g. scores containing single-line
+  variable definitions.
 
 ## 0.3.1 (2017-06-11)
 

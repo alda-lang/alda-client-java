@@ -147,7 +147,7 @@ public final class Util {
     String fromStdIn = "";
     Scanner scanner = new Scanner(System.in);
     while (scanner.hasNextLine()) {
-      fromStdIn += scanner.nextLine();
+      fromStdIn += scanner.nextLine() + "\n";
     }
     return fromStdIn;
   }
