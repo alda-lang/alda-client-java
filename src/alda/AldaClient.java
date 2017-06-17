@@ -8,6 +8,7 @@ import com.jcabi.manifests.Manifests;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.nio.file.Files;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -34,6 +35,30 @@ public class AldaClient {
     String latestApiStr = "https://api.github.com/repos/alda-lang/alda/releases/latest";
     String apiResult;
     String clientVersion = version();
+
+    File aldaPath = new File(programPath);
+    // Check to see if our programPath is valid
+    if (!aldaPath.isFile()) {
+      System.err.println("Unable to determine the current location of the alda binary. ");
+      System.err.println("Are you running a development version?");
+      System.err.println("Attempted location is '" + programPath + "'");
+      return;
+    }
+
+    // In order to avoid copying directly over the current file, we move our file to a tmp dir,
+    // then download where we want (the old location).
+    File aldaUpdateTempDir;
+    try {
+      aldaUpdateTempDir = Files.createTempDirectory("alda-updater").toFile();
+    } catch (IOException e) {
+      System.err.println("Could not create a temporary directory for the updater.");
+      System.err.println("Maybe you are out of space?");
+      e.printStackTrace();
+      return;
+    }
+    File aldaCopyPath = new File(
+      aldaUpdateTempDir,
+      (SystemUtils.IS_OS_WINDOWS ? "alda_old.exe" : "alda_old"));
 
     // Make a call to the Github API to get the latest version number/download URL
     try {
@@ -81,6 +106,11 @@ public class AldaClient {
       return;
     }
 
+    // Copy existing alda binary to temp directory
+    if (!Util.moveFile(aldaPath, aldaCopyPath))
+      return;
+
+
     System.out.println("Downloading " + downloadURL + "...");
 
     try {
@@ -89,12 +119,19 @@ public class AldaClient {
     } catch (IOException e) {
       System.err.println("Error while downloading file:");
       e.printStackTrace();
+      // Try to get our old file back on the path!
+      // Wish us luck...
+      System.out.println("Attempting to restore old alda executable.");
+      if (!Util.moveFile(aldaCopyPath, aldaPath)) {
+        System.err.println("[ERROR] There was an error restoring your old alda installation!");
+        System.err.println("You will probably need to reinstall alda completely.");
+      }
       return;
     }
 
     // set as executable if on UNIX
     if (SystemUtils.IS_OS_UNIX) {
-      new File(programPath).setExecutable(true);
+      aldaPath.setExecutable(true);
     }
 
     System.out.println();
