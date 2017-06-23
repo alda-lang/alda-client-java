@@ -17,6 +17,8 @@ import java.util.function.Consumer;
 import alda.AldaServer;
 import alda.AldaResponse;
 import alda.AldaResponse.AldaScore;
+import alda.error.NoResponseException;
+import alda.error.ParseError;
 import alda.Util;
 import jline.console.ConsoleReader;
 
@@ -50,7 +52,7 @@ public class ReplLoad implements ReplCommand {
    */
   private void loadFile(String args, AldaServer server, StringBuffer history,
                         ConsoleReader reader, Consumer<AldaScore> newInstrument)
-  throws alda.NoResponseException {
+  throws NoResponseException {
     Stream<String> fLines = null;
     boolean error = false;
 
@@ -74,11 +76,11 @@ public class ReplLoad implements ReplCommand {
       String res = "";
       try {
         // TODO: include a jobId, add parsing to job system on the server-side
-        res = server.parseRaw(newHistory.toString(), false);
-      } catch (alda.NoResponseException e) {
+        res = server.parseRaw(newHistory.toString());
+      } catch (NoResponseException e) {
         // Let the REPL handle the exception by offering to start the server.
         throw e;
-      } catch (Throwable e) {
+      } catch (ParseError e) {
         server.error(e.getMessage());
         // Don't change 'history'
         error = true;
@@ -109,7 +111,7 @@ public class ReplLoad implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
-  throws alda.NoResponseException {
+  throws NoResponseException {
     if (args.length() == 0) {
         // We will try to load from the last saved file
       if (oldSaveFile() != null && oldSaveFile().length() != 0) {

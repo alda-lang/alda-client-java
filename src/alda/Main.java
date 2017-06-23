@@ -8,6 +8,9 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParameterException;
 
+import alda.error.AldaException;
+import alda.error.ExitCode;
+import alda.error.InvalidOptionsException;
 import alda.repl.AldaRepl;
 
 public class Main {
@@ -139,10 +142,10 @@ public class Main {
   }
 
   public static void handleCommandSpecificHelp(JCommander jc, String name, AldaCommand c) {
-      if(c.help) {
-          jc.usage(name);
-          System.exit(0);
-      }
+    if(c.help) {
+      jc.usage(name);
+      ExitCode.SUCCESS.exit();
+    }
   }
 
   public static void main(String[] argv) {
@@ -192,7 +195,7 @@ public class Main {
       System.out.println(e.getMessage());
       System.out.println();
       System.out.println("For usage instructions, see --help.");
-      System.exit(1);
+      ExitCode.USER_ERROR.exit();
     }
 
     AldaServer server = new AldaServer(globalOpts.host,
@@ -220,12 +223,12 @@ public class Main {
       switch (command) {
         case "help":
           jc.usage();
-          System.exit(0);
+          break;
 
         case "update":
           handleCommandSpecificHelp(jc, "update", update);
           AldaClient.updateAlda();
-          System.exit(0);
+          break;
 
         case "server":
           handleCommandSpecificHelp(jc, "server", serverCmd);
@@ -250,37 +253,37 @@ public class Main {
         case "start-server":
         case "init":
           handleCommandSpecificHelp(jc, "up", startServer);
-          success = server.upBg(globalOpts.numberOfWorkers);
-          System.exit(success ? 0 : 1);
+          server.upBg(globalOpts.numberOfWorkers);
+          break;
 
         case "down":
         case "stop-server":
           handleCommandSpecificHelp(jc, "down", stopServer);
           server.down();
-          System.exit(0);
+          break;
 
         case "downup":
         case "restart-server":
           handleCommandSpecificHelp(jc, "restart-server", restartServer);
-          success = server.downUp(globalOpts.numberOfWorkers);
-          System.exit(success ? 0 : 1);
+          server.downUp(globalOpts.numberOfWorkers);
+          break;
 
         case "list":
           handleCommandSpecificHelp(jc, "list", list);
           AldaClient.listProcesses(globalOpts.timeout);
-          System.exit(0);
+          break;
 
         case "status":
           handleCommandSpecificHelp(jc, "status", status);
           server.status();
-          System.exit(0);
+          break;
 
         case "version":
           handleCommandSpecificHelp(jc, "version", version);
           System.out.println("Client version: " + AldaClient.version());
           System.out.print("Server version: ");
           server.version();
-          System.exit(0);
+          break;
 
         case "play":
           handleCommandSpecificHelp(jc, "play", play);
@@ -297,10 +300,12 @@ public class Main {
               server.play(Util.getStdIn(), play.from, play.to);
               break;
             default:
-              throw new Exception("Please provide some Alda code in the form " +
-                                  "of a string, file, or STDIN.");
+              throw new InvalidOptionsException(
+                "Please provide some Alda code in the form of a string, " +
+                "file, or STDIN."
+              );
           }
-          System.exit(0);
+          break;
 
         case "stop":
         case "stop-playback":
@@ -323,19 +328,22 @@ public class Main {
               server.parse(Util.getStdIn());
               break;
             default:
-              throw new Exception("Please provide some Alda code in the form " +
-                                  "of a string, file, or STDIN.");
+              throw new InvalidOptionsException(
+                "Please provide some Alda code in the form of a string, " +
+                "file, or STDIN."
+              );
           }
-          System.exit(0);
+          break;
       }
-    } catch (Throwable e) {
+    } catch (AldaException e) {
       server.error(e.getMessage());
       if (globalOpts.verbose) {
         System.out.println();
         e.printStackTrace();
       }
-      System.exit(1);
+      e.getExitCode().exit();
     }
+    ExitCode.SUCCESS.exit();
   }
 
 }

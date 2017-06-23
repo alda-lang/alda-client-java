@@ -2,6 +2,7 @@ package alda.repl.commands;
 
 import alda.AldaResponse.AldaScore;
 import alda.AldaServer;
+import alda.error.NoResponseException;
 
 import java.util.function.Consumer;
 
@@ -11,7 +12,7 @@ public class ReplDown implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
-  throws alda.NoResponseException {
+  throws NoResponseException {
     server.setQuiet(false);
     server.down();
     server.setQuiet(true);

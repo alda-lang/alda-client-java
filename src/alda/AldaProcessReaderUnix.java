@@ -15,7 +15,7 @@ public class AldaProcessReaderUnix implements IAldaProcessReader {
     private static String PROCESS_LIST_ATANDT_COMMAND = "ps ax";
 
     @Override
-    public List<AldaProcess> getProcesses() throws IOException {
+    public List<AldaProcess> getProcesses() throws alda.error.IOException {
         List<AldaProcess> processes = new ArrayList<AldaProcess>();
 
         String ps;
@@ -24,44 +24,52 @@ public class AldaProcessReaderUnix implements IAldaProcessReader {
         } else {
             ps = PROCESS_LIST_ATANDT_COMMAND;
         }
-        Process p = Runtime.getRuntime().exec(ps);
-        InputStreamReader isr = new InputStreamReader(p.getInputStream());
-        BufferedReader input = new BufferedReader(isr);
-        String line;
-        while ((line = input.readLine()) != null) {
+
+        try {
+          Process p = Runtime.getRuntime().exec(ps);
+          InputStreamReader isr = new InputStreamReader(p.getInputStream());
+
+          BufferedReader input = new BufferedReader(isr);
+          String line;
+          while ((line = input.readLine()) != null) {
             if (line.contains("alda-fingerprint")) {
-                AldaProcess process = new AldaProcess();
+              AldaProcess process = new AldaProcess();
 
-                Matcher a = Pattern.compile("^\\s*(\\d+).*").matcher(line);
-                Matcher b = Pattern.compile(".*--port (\\d+).*").matcher(line);
-                Matcher c = Pattern.compile(".* server.*").matcher(line);
-                Matcher d = Pattern.compile(".* worker.*").matcher(line);
-                if (a.find()) {
-                    process.pid = Integer.parseInt(a.group(1));
-                    if (b.find()) {
-                        process.port = Integer.parseInt(b.group(1));
-                    } else {
-                        process.port = -1;
-                    }
-
-                    if (c.find()) {
-                        process.type = "server";
-                    }
-
-                    if (d.find()) {
-                        process.type = "worker";
-                    }
+              Matcher a = Pattern.compile("^\\s*(\\d+).*").matcher(line);
+              Matcher b = Pattern.compile(".*--port (\\d+).*").matcher(line);
+              Matcher c = Pattern.compile(".* server.*").matcher(line);
+              Matcher d = Pattern.compile(".* worker.*").matcher(line);
+              if (a.find()) {
+                process.pid = Integer.parseInt(a.group(1));
+                if (b.find()) {
+                  process.port = Integer.parseInt(b.group(1));
+                } else {
+                  process.port = -1;
                 }
 
-                processes.add(process);
+                if (c.find()) {
+                  process.type = "server";
+                }
+
+                if (d.find()) {
+                  process.type = "worker";
+                }
+              }
+
+              processes.add(process);
             }
+          }
+          input.close();
+          p.getInputStream().close();
+          p.getOutputStream().close();
+          p.getErrorStream().close();
+          p.destroy();
+          return processes;
+        } catch (IOException e) {
+          throw new alda.error.IOException(
+            "Unable to list running processes.", e
+          );
         }
-        input.close();
-        p.getInputStream().close();
-        p.getOutputStream().close();
-        p.getErrorStream().close();
-        p.destroy();
-        return processes;
     }
 
     private boolean isBsdPsCommand() {

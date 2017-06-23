@@ -20,6 +20,12 @@ import alda.AldaServer;
 import alda.AldaClient;
 import alda.AldaResponse;
 import alda.AldaResponse.AldaScore;
+import alda.error.AlreadyUpException;
+import alda.error.ExitCode;
+import alda.error.InvalidOptionsException;
+import alda.error.NoAvailableWorkerException;
+import alda.error.NoResponseException;
+import alda.error.UnsuccessfulException;
 import alda.Util;
 
 import alda.repl.commands.ReplCommand;
@@ -62,7 +68,7 @@ public class AldaRepl {
     } catch (IOException e) {
       System.err.println("An error was detected when we tried to read a line.");
       e.printStackTrace();
-      System.exit(1);
+      ExitCode.SYSTEM_ERROR.exit();
     }
     AnsiConsole.systemInstall();
   }
@@ -157,6 +163,10 @@ public class AldaRepl {
     promptPrefix = "";
   }
 
+  // Used by the Alda REPL.
+  //
+  // Errors are handled internally; if one occurs, the stacktrace is printed and
+  // execution continues.
   private void offerToStartServer() {
     System.out.println("The server is down. Start server on port " +
                        server.port + "?");
@@ -168,7 +178,8 @@ public class AldaRepl {
             server.setQuiet(false);
             server.upBg(DEFAULT_NUMBER_OF_WORKERS);
             server.setQuiet(true);
-          } catch (Throwable e) {
+          } catch (InvalidOptionsException | NoResponseException |
+                   AlreadyUpException | alda.error.IOException e) {
             System.err.println("Unable to start server:");
             e.printStackTrace();
           }
@@ -177,12 +188,12 @@ public class AldaRepl {
           // do nothing
           break;
         case "quit":
-          System.exit(0);
+          ExitCode.SUCCESS.exit();
         default:
           // this shouldn't happen; if it does, just move on
           break;
       }
-    } catch (IOException e) {
+    } catch (alda.error.IOException e) {
       System.err.println("Error trying to read character:");
       e.printStackTrace();
     }
@@ -208,7 +219,7 @@ public class AldaRepl {
       } catch (IOException e) {
         System.err.println("An error was detected when we tried to read a line.");
         e.printStackTrace();
-        System.exit(1);
+        ExitCode.SYSTEM_ERROR.exit();
       } catch (UserInterruptException e) {
 		input = ":quit";
 	  }
@@ -244,18 +255,18 @@ public class AldaRepl {
           // Run the command
           try {
             cmd.act(arguments.trim(), history, server, r, this::setPromptPrefix);
-          } catch (alda.NoResponseException e) {
+          } catch (NoResponseException e) {
             System.out.println();
             offerToStartServer();
           } catch (UserInterruptException e) {
             try {
               // Quit the repl
               cmd.act(":quit", history, server, r, this::setPromptPrefix);
-            } catch (Exception ex) {
-              // Give up.
-              System.err.println("An unknown error occurred!");
-              ex.printStackTrace();
-              System.exit(1);
+            } catch (NoResponseException nre) {
+              // This shouldn't happen, but if it does...
+              nre.printStackTrace();
+              // Intentionally quitting should be considered successful.
+              ExitCode.SUCCESS.exit();
             }
           }
         } else {
@@ -265,7 +276,7 @@ public class AldaRepl {
         try {
           // Play the stuff we just got, with history as context
           AldaResponse playResponse = server.playFromRepl(
-            input, history.toString(), null, null, false
+            input, history.toString(), null, null
           );
 
           // If we have no exceptions, add to history
@@ -276,10 +287,10 @@ public class AldaRepl {
           if (playResponse != null) {
             this.setPromptPrefix(playResponse.score);
           }
-        } catch (alda.NoResponseException e) {
+        } catch (NoResponseException e) {
           System.out.println();
           offerToStartServer();
-        } catch (Throwable e) {
+        } catch (NoAvailableWorkerException | UnsuccessfulException e) {
           server.error(e.getMessage());
           if (verbose) {
             System.out.println();

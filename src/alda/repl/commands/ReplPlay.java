@@ -2,6 +2,9 @@ package alda.repl.commands;
 
 import alda.AldaServer;
 import alda.AldaResponse.AldaScore;
+import alda.error.NoAvailableWorkerException;
+import alda.error.NoResponseException;
+import alda.error.UnsuccessfulException;
 import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
@@ -13,7 +16,7 @@ public class ReplPlay implements ReplCommand {
 
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
-  throws alda.NoResponseException {
+  throws NoResponseException {
     // Parse from/to args
     String[] arguments = args.split("\\s+");
     String from = "";
@@ -45,11 +48,11 @@ public class ReplPlay implements ReplCommand {
     try {
       server.playFromRepl(history.toString(), "",
                           from.length() > 0 ? from : null,
-                          to.length() > 0 ? to : null, false);
-    } catch (alda.NoResponseException e) {
+                          to.length() > 0 ? to : null);
+    } catch (NoResponseException e) {
       // Let the REPL handle the exception by offering to start the server.
       throw e;
-    } catch (Throwable e) {
+    } catch (NoAvailableWorkerException | UnsuccessfulException e) {
       server.error(e.getMessage());
     }
   }

@@ -72,9 +72,14 @@ public class TestEnvironment {
         return STATUS;
     }
 
-    private static void startAldaServerIfNotRunning(int port, int numberOfWorkers ) throws IOException{
+    private static void startAldaServerIfNotRunning(int port, int numberOfWorkers)
+    throws alda.error.IOException {
+      try {
         Process p = Runtime.getRuntime().exec(ALDA_EXECUTABLE+" -p "+port+" -w "+numberOfWorkers+" up");
         printProcessOutput(p.getInputStream());
+      } catch (IOException e) {
+        throw new alda.error.IOException("Unable to start Alda server.", e);
+      }
     }
 
     private static void stopAldaServer(int port) {
@@ -85,7 +90,8 @@ public class TestEnvironment {
 
     }
 
-    private static void printProcessOutput(InputStream inputStream) throws IOException {
+    private static void printProcessOutput(InputStream inputStream)
+    throws IOException {
         InputStreamReader isr = new InputStreamReader(inputStream);
         BufferedReader input = new BufferedReader(isr);
         String line;
