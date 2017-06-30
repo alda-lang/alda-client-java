@@ -1,6 +1,7 @@
 package alda;
 
 import alda.error.UnsuccessfulException;
+import alda.error.SystemException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -31,14 +32,14 @@ public class AldaClient {
   }
 
   public static void updateAlda()
-  throws alda.error.IOException, UnsuccessfulException {
+  throws SystemException, UnsuccessfulException {
     // The path to the current alda executable
     String programPath;
 
     try {
       programPath = Util.getProgramPath();
     } catch (URISyntaxException e) {
-      throw new alda.error.IOException(
+      throw new SystemException(
         "Could not determine the path to the current `alda` executable.", e
       );
     }
@@ -105,7 +106,7 @@ public class AldaClient {
 
 
 
-  public static void listProcesses(int timeout) throws alda.error.IOException {
+  public static void listProcesses(int timeout) throws SystemException {
     IAldaProcessReader processReader = getProcessReader();
     List<AldaProcess> processes = processReader.getProcesses();
 
@@ -155,7 +156,7 @@ public class AldaClient {
   }
 
   public static boolean checkForExistingServer(int port)
-    throws alda.error.IOException {
+    throws SystemException {
     IAldaProcessReader processReader = getProcessReader();
     List<AldaProcess> processes = processReader.getProcesses();
 

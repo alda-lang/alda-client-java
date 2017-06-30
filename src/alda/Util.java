@@ -2,6 +2,7 @@ package alda;
 
 import alda.error.ExitCode;
 import alda.error.InvalidOptionsException;
+import alda.error.SystemException;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -67,7 +68,7 @@ public final class Util {
   // key.
   public static String promptWithChoices(ConsoleReader rdr,
                                          List<String> choices)
-  throws alda.error.IOException {
+  throws SystemException {
     char[] allowedChars = new char[choices.size()];
     Map<Character, String> m = new LinkedHashMap<Character, String>();
 
@@ -90,7 +91,7 @@ public final class Util {
       char c = (char)rdr.readCharacter(allowedChars);
       return m.get(c);
     } catch (IOException e) {
-      throw new alda.error.IOException("Unable to read character.", e);
+      throw new SystemException("Unable to read character.", e);
     }
   }
 
@@ -106,7 +107,7 @@ public final class Util {
     try {
       System.out.println(prompt);
       return promptWithChoices(r, Arrays.asList(choices));
-    } catch (alda.error.IOException e) {
+    } catch (SystemException e) {
       System.err.println("There was an error reading input!");
       e.printStackTrace();
       ExitCode.SYSTEM_ERROR.exit();
@@ -175,15 +176,13 @@ public final class Util {
                .toURI().getPath();
   }
 
-  public static String makeApiCall(String apiRequest)
-    throws alda.error.IOException {
-
+  public static String makeApiCall(String apiRequest) throws SystemException {
     try {
       URL url = new URL(apiRequest);
       HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 
       if (conn.getResponseCode() != 200) {
-        throw new alda.error.IOException(conn.getResponseMessage());
+        throw new SystemException(conn.getResponseMessage());
       }
 
       // Buffer the result into a string
@@ -204,12 +203,12 @@ public final class Util {
 
       return sb.toString();
     } catch (IOException e) {
-      throw new alda.error.IOException("Error while making HTTP request.", e);
+      throw new SystemException("Error while making HTTP request.", e);
     }
   }
 
   public static void downloadFile(String url, String path)
-  throws alda.error.IOException {
+  throws SystemException {
     BufferedInputStream in = null;
     FileOutputStream fout = null;
     try {
@@ -222,32 +221,31 @@ public final class Util {
         fout.write(data, 0, count);
       }
     } catch (IOException e) {
-      throw new alda.error.IOException("Unable to download file.", e);
+      throw new SystemException("Unable to download file.", e);
     } finally {
       try {
         // Close file IO's
         if (in != null) in.close();
         if (fout != null) fout.close();
       } catch (IOException e) {
-        throw new alda.error.IOException(
+        throw new SystemException(
           "Error cleaning up after downloading file.", e
         );
       }
     }
   }
 
-  public static String readFile(File file) throws alda.error.IOException {
+  public static String readFile(File file) throws SystemException {
     try {
       return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
     } catch (IOException e) {
-      throw new alda.error.IOException(
+      throw new SystemException(
         "Unable to read file: " + file.getAbsolutePath(), e
       );
     }
   }
 
-  public static String readResourceFile(String path)
-    throws alda.error.IOException {
+  public static String readResourceFile(String path) throws SystemException {
     StringBuilder out = new StringBuilder();
     BufferedReader reader = null;
     try {
@@ -259,9 +257,7 @@ public final class Util {
       }
       return out.toString();
     } catch(IOException e) {
-      throw new alda.error.IOException(
-        "Unable to read resource file: " + path, e
-      );
+      throw new SystemException("Unable to read resource file: " + path, e);
     } finally {
       try {
         reader.close();
@@ -293,11 +289,11 @@ public final class Util {
   }
 
   public static void runProgramInFg(String... args)
-  throws alda.error.IOException, InterruptedException {
+  throws SystemException, InterruptedException {
     try {
       new ProcessBuilder(args).inheritIO().start().waitFor();
     } catch (IOException e) {
-      throw new alda.error.IOException(
+      throw new SystemException(
         "Error running program: " + String.join(" ", args), e
       );
     }

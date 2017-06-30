@@ -5,6 +5,7 @@ import alda.AldaServer;
 import alda.error.AlreadyUpException;
 import alda.error.InvalidOptionsException;
 import alda.error.NoResponseException;
+import alda.error.SystemException;
 import alda.repl.AldaRepl;
 
 import java.util.function.Consumer;
@@ -19,8 +20,7 @@ public class ReplUp implements ReplCommand {
     server.setQuiet(false);
     try {
       server.upBg(AldaRepl.DEFAULT_NUMBER_OF_WORKERS);
-    } catch (InvalidOptionsException | AlreadyUpException |
-             alda.error.IOException e) {
+    } catch (InvalidOptionsException | AlreadyUpException | SystemException e) {
       System.err.println("Unable to start server: ");
       e.printStackTrace();
     }

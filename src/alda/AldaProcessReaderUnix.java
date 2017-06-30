@@ -1,5 +1,7 @@
 package alda;
 
+import alda.error.SystemException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,7 +17,7 @@ public class AldaProcessReaderUnix implements IAldaProcessReader {
     private static String PROCESS_LIST_ATANDT_COMMAND = "ps ax";
 
     @Override
-    public List<AldaProcess> getProcesses() throws alda.error.IOException {
+    public List<AldaProcess> getProcesses() throws SystemException {
         List<AldaProcess> processes = new ArrayList<AldaProcess>();
 
         String ps;
@@ -66,9 +68,7 @@ public class AldaProcessReaderUnix implements IAldaProcessReader {
           p.destroy();
           return processes;
         } catch (IOException e) {
-          throw new alda.error.IOException(
-            "Unable to list running processes.", e
-          );
+          throw new SystemException("Unable to list running processes.", e);
         }
     }
 

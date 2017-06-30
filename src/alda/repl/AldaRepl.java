@@ -25,6 +25,7 @@ import alda.error.ExitCode;
 import alda.error.InvalidOptionsException;
 import alda.error.NoAvailableWorkerException;
 import alda.error.NoResponseException;
+import alda.error.SystemException;
 import alda.error.UnsuccessfulException;
 import alda.Util;
 
@@ -179,7 +180,7 @@ public class AldaRepl {
             server.upBg(DEFAULT_NUMBER_OF_WORKERS);
             server.setQuiet(true);
           } catch (InvalidOptionsException | NoResponseException |
-                   AlreadyUpException | alda.error.IOException e) {
+                   AlreadyUpException | SystemException e) {
             System.err.println("Unable to start server:");
             e.printStackTrace();
           }
@@ -193,7 +194,7 @@ public class AldaRepl {
           // this shouldn't happen; if it does, just move on
           break;
       }
-    } catch (alda.error.IOException e) {
+    } catch (SystemException e) {
       System.err.println("Error trying to read character:");
       e.printStackTrace();
     }

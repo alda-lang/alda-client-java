@@ -1,5 +1,7 @@
 package alda.testutils;
 
+import alda.error.SystemException;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -73,12 +75,12 @@ public class TestEnvironment {
     }
 
     private static void startAldaServerIfNotRunning(int port, int numberOfWorkers)
-    throws alda.error.IOException {
+    throws SystemException {
       try {
         Process p = Runtime.getRuntime().exec(ALDA_EXECUTABLE+" -p "+port+" -w "+numberOfWorkers+" up");
         printProcessOutput(p.getInputStream());
       } catch (IOException e) {
-        throw new alda.error.IOException("Unable to start Alda server.", e);
+        throw new SystemException("Unable to start Alda server.", e);
       }
     }
 

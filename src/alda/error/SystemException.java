@@ -1,11 +1,11 @@
 package alda.error;
 
-public class IOException extends AldaException {
-  public IOException(String msg) {
+public class SystemException extends AldaException {
+  public SystemException(String msg) {
     super(msg);
   }
 
-  public IOException(String msg, Throwable e) {
+  public SystemException(String msg, Throwable e) {
     super(msg, e);
   }
 

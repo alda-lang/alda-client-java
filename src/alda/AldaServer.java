@@ -5,6 +5,7 @@ import alda.error.InvalidOptionsException;
 import alda.error.NoAvailableWorkerException;
 import alda.error.NoResponseException;
 import alda.error.ParseError;
+import alda.error.SystemException;
 import alda.error.UnsuccessfulException;
 
 import java.io.File;
@@ -119,7 +120,7 @@ public class AldaServer extends AldaProcess {
 
   public void upBg(int numberOfWorkers)
     throws InvalidOptionsException, NoResponseException, AlreadyUpException,
-           alda.error.IOException {
+           SystemException {
     assertNotRemoteHost();
 
     boolean serverAlreadyUp = checkForConnection();
@@ -131,7 +132,7 @@ public class AldaServer extends AldaProcess {
     try {
       serverAlreadyTryingToStart = SystemUtils.IS_OS_UNIX &&
                                    AldaClient.checkForExistingServer(port);
-    } catch (alda.error.IOException e) {
+    } catch (SystemException e) {
       System.out.println("WARNING: Unable to detect whether or not there is " +
                          "already a server running on that port.");
       serverAlreadyTryingToStart = false;
@@ -155,13 +156,11 @@ public class AldaServer extends AldaProcess {
       waitForConnection();
       announceServerUp();
     } catch (URISyntaxException e) {
-      throw new alda.error.IOException(
+      throw new SystemException(
         String.format("Unable to fork '%s' into the background."), e
       );
     } catch (IOException e) {
-      throw new alda.error.IOException(
-        "Unable to fork a background process.", e
-      );
+      throw new SystemException("Unable to fork a background process.", e);
     }
 
     msg("Starting worker processes...");
@@ -218,7 +217,7 @@ public class AldaServer extends AldaProcess {
 
   public void downUp(int numberOfWorkers)
     throws NoResponseException, AlreadyUpException, InvalidOptionsException,
-           alda.error.IOException {
+           SystemException {
     down();
 
     // FIXME: this is prone to failure if the timing isn't just right. It would
@@ -353,7 +352,7 @@ public class AldaServer extends AldaProcess {
 
   public void play(File file, String from, String to)
     throws NoAvailableWorkerException, UnsuccessfulException,
-           alda.error.IOException, NoResponseException {
+           SystemException, NoResponseException {
     String fileBody = Util.readFile(file);
     play(fileBody, from, to);
   }
@@ -439,7 +438,7 @@ public class AldaServer extends AldaProcess {
   }
 
   public void parse(File file)
-    throws NoResponseException, ParseError, alda.error.IOException {
+    throws NoResponseException, ParseError, SystemException {
     String fileBody = Util.readFile(file);
     parse(fileBody);
   }
