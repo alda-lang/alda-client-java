@@ -76,7 +76,7 @@ public class AldaClient {
     if (downloadURL == null) {
       throw new UnsuccessfulException(
         "Alda download link not found for your platform. Please file an " +
-        "issue at: https://github.com/alda-lang/alda/issues/new"
+        "issue at: https://github.com/alda-lang/alda-client-java/issues/new"
       );
     }
 
