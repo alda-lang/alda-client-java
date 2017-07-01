@@ -2,6 +2,10 @@ package alda.repl.commands;
 
 import alda.AldaResponse.AldaScore;
 import alda.AldaServer;
+import alda.error.AlreadyUpException;
+import alda.error.InvalidOptionsException;
+import alda.error.NoResponseException;
+import alda.error.SystemException;
 import alda.repl.AldaRepl;
 
 import java.util.function.Consumer;
@@ -12,11 +16,11 @@ public class ReplUp implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
-  throws alda.NoResponseException {
+  throws NoResponseException {
     server.setQuiet(false);
     try {
       server.upBg(AldaRepl.DEFAULT_NUMBER_OF_WORKERS);
-    } catch (alda.InvalidOptionsException e) {
+    } catch (InvalidOptionsException | AlreadyUpException | SystemException e) {
       System.err.println("Unable to start server: ");
       e.printStackTrace();
     }

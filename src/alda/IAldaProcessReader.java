@@ -1,9 +1,8 @@
 package alda;
 
-import java.io.IOException;
+import alda.error.SystemException;
 import java.util.List;
 
 public interface IAldaProcessReader {
-
-    List<AldaProcess> getProcesses() throws IOException;
+    List<AldaProcess> getProcesses() throws SystemException;
 }

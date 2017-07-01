@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 
 import alda.AldaServer;
 import alda.AldaResponse.AldaScore;
+import alda.error.NoResponseException;
+import alda.error.ParseError;
 import alda.Util;
 
 import java.util.function.Consumer;
@@ -19,9 +21,9 @@ public class ReplMap implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
-  throws alda.NoResponseException {
+  throws NoResponseException {
     try {
-      String res = server.parseRaw(history.toString(), false);
+      String res = server.parseRaw(history.toString());
 
       if (res != null) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -31,10 +33,10 @@ public class ReplMap implements ReplCommand {
       } else {
         System.err.println("An internal error occured when reading the map.");
       }
-    } catch (alda.NoResponseException e) {
+    } catch (NoResponseException e) {
       // Let the REPL handle the exception by offering to start the server.
       throw e;
-    } catch (Throwable e) {
+    } catch (ParseError e) {
       server.error(e.getMessage());
     }
   }

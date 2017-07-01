@@ -1,5 +1,9 @@
 package alda;
 
+import alda.error.ExitCode;
+import alda.error.InvalidOptionsException;
+import alda.error.SystemException;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.Console;
@@ -33,6 +37,17 @@ import org.apache.commons.lang3.SystemUtils;
 
 public final class Util {
 
+  // Thread.sleep, but with boilerplate handling InterruptException by
+  // re-interrupting the thread and throwing a RuntimeException.
+  public static void sleep(int ms) {
+    try {
+      Thread.sleep(ms);
+    } catch (InterruptedException ie) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(ie);
+    }
+  }
+
   public static Object[] concat(Object[] a, Object[] b) {
     int aLen = a.length;
     int bLen = b.length;
@@ -53,7 +68,7 @@ public final class Util {
   // key.
   public static String promptWithChoices(ConsoleReader rdr,
                                          List<String> choices)
-  throws IOException {
+  throws SystemException {
     char[] allowedChars = new char[choices.size()];
     Map<Character, String> m = new LinkedHashMap<Character, String>();
 
@@ -72,8 +87,12 @@ public final class Util {
     System.out.println(choiceString);
 
     // Read characters until the user enters one that is an option.
-    char c = (char)rdr.readCharacter(allowedChars);
-    return m.get(c);
+    try {
+      char c = (char)rdr.readCharacter(allowedChars);
+      return m.get(c);
+    } catch (IOException e) {
+      throw new SystemException("Unable to read character.", e);
+    }
   }
 
   /**
@@ -88,10 +107,10 @@ public final class Util {
     try {
       System.out.println(prompt);
       return promptWithChoices(r, Arrays.asList(choices));
-    } catch (IOException e) {
+    } catch (SystemException e) {
       System.err.println("There was an error reading input!");
       e.printStackTrace();
-      System.exit(1);
+      ExitCode.SYSTEM_ERROR.exit();
     }
     return null;
   }
@@ -157,18 +176,20 @@ public final class Util {
                .toURI().getPath();
   }
 
-  public static String makeApiCall(String apiRequest) throws IOException {
+  public static String makeApiCall(String apiRequest) throws SystemException {
+    try {
       URL url = new URL(apiRequest);
-      HttpURLConnection conn =
-        (HttpURLConnection) url.openConnection();
+      HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 
       if (conn.getResponseCode() != 200) {
-        throw new IOException(conn.getResponseMessage());
+        throw new SystemException(conn.getResponseMessage());
       }
 
       // Buffer the result into a string
       BufferedReader rd = new BufferedReader(
-        new InputStreamReader(conn.getInputStream()));
+        new InputStreamReader(conn.getInputStream())
+      );
+
       StringBuilder sb = new StringBuilder();
       String line;
       line = rd.readLine();
@@ -176,12 +197,18 @@ public final class Util {
         sb.append(line);
         line = rd.readLine();
       }
+
       rd.close();
       conn.disconnect();
+
       return sb.toString();
+    } catch (IOException e) {
+      throw new SystemException("Error while making HTTP request.", e);
+    }
   }
 
-  public static void downloadFile(String url, String path) throws IOException {
+  public static void downloadFile(String url, String path)
+  throws SystemException {
     BufferedInputStream in = null;
     FileOutputStream fout = null;
     try {
@@ -193,18 +220,32 @@ public final class Util {
       while ((count = in.read(data, 0, 1024)) != -1) {
         fout.write(data, 0, count);
       }
+    } catch (IOException e) {
+      throw new SystemException("Unable to download file.", e);
     } finally {
-      // Close file IO's
-      if (in != null) in.close();
-      if (fout != null) fout.close();
+      try {
+        // Close file IO's
+        if (in != null) in.close();
+        if (fout != null) fout.close();
+      } catch (IOException e) {
+        throw new SystemException(
+          "Error cleaning up after downloading file.", e
+        );
+      }
     }
   }
 
-  public static String readFile(File file) throws IOException {
-    return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+  public static String readFile(File file) throws SystemException {
+    try {
+      return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new SystemException(
+        "Unable to read file: " + file.getAbsolutePath(), e
+      );
+    }
   }
 
-  public static String readResourceFile(String path) {
+  public static String readResourceFile(String path) throws SystemException {
     StringBuilder out = new StringBuilder();
     BufferedReader reader = null;
     try {
@@ -214,20 +255,17 @@ public final class Util {
       while ((line = reader.readLine()) != null) {
         out.append(line);
       }
+      return out.toString();
     } catch(IOException e) {
-      System.err.println("There was an error reading a file!");
-      e.printStackTrace();
+      throw new SystemException("Unable to read resource file: " + path, e);
     } finally {
       try {
         reader.close();
-      } catch (Exception e) {
-        // Theres nothing we can do...
-        System.err.println("There was a critical error!");
+      } catch (IOException e) {
+        System.err.println("Error closing reader:");
         e.printStackTrace();
-        return null;
       }
     }
-    return out.toString();
   }
 
   public static void forkProgram(Object... args)
@@ -251,8 +289,14 @@ public final class Util {
   }
 
   public static void runProgramInFg(String... args)
-  throws IOException, InterruptedException {
-    new ProcessBuilder(args).inheritIO().start().waitFor();
+  throws SystemException, InterruptedException {
+    try {
+      new ProcessBuilder(args).inheritIO().start().waitFor();
+    } catch (IOException e) {
+      throw new SystemException(
+        "Error running program: " + String.join(" ", args), e
+      );
+    }
   }
 
   public static void callClojureFn(String fn, Object... args) {

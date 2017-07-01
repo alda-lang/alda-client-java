@@ -1,5 +1,13 @@
 package alda;
 
+import alda.error.AlreadyUpException;
+import alda.error.InvalidOptionsException;
+import alda.error.NoAvailableWorkerException;
+import alda.error.NoResponseException;
+import alda.error.ParseError;
+import alda.error.SystemException;
+import alda.error.UnsuccessfulException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -80,21 +88,13 @@ public class AldaServer extends AldaProcess {
     System.out.println(prefix + message);
   }
 
-  public void error(String msg) {
-    error(msg, true);
-  }
-
-  public void error(String message, boolean catchExceptions) {
-    if (!catchExceptions) {
-      throw new ServerRuntimeError(message);
-    } else {
-      String prefix = ansi().fg(RED).a("ERROR ").reset().toString();
-      // save and restore quiet value to print out errors
-      boolean oldQuiet = quiet;
-      quiet = false;
-      msg(prefix + message);
-      quiet = oldQuiet;
-    }
+  public void error(String message) {
+    String prefix = ansi().fg(RED).a("ERROR ").reset().toString();
+    // save and restore quiet value to print out errors
+    boolean oldQuiet = quiet;
+    quiet = false;
+    msg(prefix + message);
+    quiet = oldQuiet;
   }
 
   private final String CHECKMARK = "\u2713";
@@ -118,31 +118,31 @@ public class AldaServer extends AldaProcess {
     announceServerDown(false);
   }
 
-  // Returns true if starting the server is successful.
-  public boolean upBg(int numberOfWorkers)
-    throws InvalidOptionsException, NoResponseException {
+  public void upBg(int numberOfWorkers)
+    throws InvalidOptionsException, NoResponseException, AlreadyUpException,
+           SystemException {
     assertNotRemoteHost();
 
     boolean serverAlreadyUp = checkForConnection();
     if (serverAlreadyUp) {
-      msg("Server already up.");
-      return false;
+      throw new AlreadyUpException("Server already up.");
     }
 
     boolean serverAlreadyTryingToStart;
     try {
       serverAlreadyTryingToStart = SystemUtils.IS_OS_UNIX &&
                                    AldaClient.checkForExistingServer(port);
-    } catch (IOException e) {
+    } catch (SystemException e) {
       System.out.println("WARNING: Unable to detect whether or not there is " +
                          "already a server running on that port.");
       serverAlreadyTryingToStart = false;
     }
 
     if (serverAlreadyTryingToStart) {
-      msg("There is already a server trying to start on this port. Please " +
-          "be patient -- this can take a while.");
-      return false;
+      throw new AlreadyUpException(
+        "There is already a server trying to start on this port. Please be " +
+        "patient -- this can take a while."
+      );
     }
 
     Object[] opts = {"--host", host,
@@ -153,36 +153,21 @@ public class AldaServer extends AldaProcess {
     try {
       Util.forkProgram(Util.conj(opts, "server"));
       msg("Starting Alda server...");
-
-      boolean serverUp = waitForConnection();
-      if (serverUp) {
-        announceServerUp();
-      } else {
-        announceServerDown();
-        return false;
-      }
+      waitForConnection();
+      announceServerUp();
     } catch (URISyntaxException e) {
-      error(String.format("Unable to fork '%s' into the background; " +
-            " got URISyntaxException: %s", e.getInput(), e.getReason()));
-      return false;
+      throw new SystemException(
+        String.format("Unable to fork '%s' into the background."), e
+      );
     } catch (IOException e) {
-      error(String.format("An IOException occurred trying to fork a " +
-                          "background process: %s",
-                          e.getMessage()));
-      return false;
+      throw new SystemException("Unable to fork a background process.", e);
     }
 
     msg("Starting worker processes...");
 
     int workersAvailable = 0;
     while (workersAvailable == 0) {
-      try {
-        Thread.sleep(STARTUP_RETRY_INTERVAL);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        System.out.println("Thread interrupted.");
-        return false;
-      }
+      Util.sleep(STARTUP_RETRY_INTERVAL);
       AldaRequest req = new AldaRequest(host, port);
       req.command = "status";
       AldaResponse res = req.send();
@@ -196,7 +181,6 @@ public class AldaServer extends AldaProcess {
     }
 
     announceReady();
-    return true;
   }
 
   public void upFg(int numberOfWorkers) throws InvalidOptionsException {
@@ -231,18 +215,18 @@ public class AldaServer extends AldaProcess {
     }
   }
 
-  // Returns true if starting the server is successful.
-  public boolean downUp(int numberOfWorkers)
-    throws NoResponseException, InvalidOptionsException {
+  public void downUp(int numberOfWorkers)
+    throws NoResponseException, AlreadyUpException, InvalidOptionsException,
+           SystemException {
     down();
-    try {
-      Thread.sleep(PAUSE_BEFORE_RESTARTING_SERVER);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      System.out.println("Thread interrupted.");
-    }
+
+    // FIXME: this is prone to failure if the timing isn't just right. It would
+    // be better to loop, checking if the server is still up, until it isn't,
+    // and then proceed.
+    Util.sleep(PAUSE_BEFORE_RESTARTING_SERVER);
+
     System.out.println();
-    return upBg(numberOfWorkers);
+    upBg(numberOfWorkers);
   }
 
   public void status() {
@@ -251,14 +235,12 @@ public class AldaServer extends AldaProcess {
 
     try {
       AldaResponse res = req.send(STATUS_RETRY_INTERVAL, STATUS_RETRIES);
-
-      if (res.success) {
-        msg(res.body);
-      } else {
-        error(res.body);
-      }
+      if (!res.success) throw new UnsuccessfulException(res.body);
+      msg(res.body);
     } catch (NoResponseException e) {
       announceServerDown();
+    } catch (UnsuccessfulException e) {
+      msg("Unable to report status.");
     }
   }
 
@@ -272,13 +254,9 @@ public class AldaServer extends AldaProcess {
   }
 
   public AldaResponse play(String code, String from, String to)
-    throws NoResponseException{
+    throws NoAvailableWorkerException, UnsuccessfulException,
+           NoResponseException {
     return play(code, null, from, to);
-  }
-
-  public AldaResponse play(String code, String history, String from, String to)
-    throws NoResponseException {
-    return play(code, history, from, to, true);
   }
 
   /**
@@ -288,11 +266,11 @@ public class AldaServer extends AldaProcess {
    * @param history The history context to supplement code
    * @param from Time to play from
    * @param to Time to stop playing
-   * @param catchExceptions Whether this method should catch it's exceptions
-   * @return The response from the play, with usefull information. Null if we encountered an error.
+   * @return The response from the play, with useful information.
    */
-  public AldaResponse play(String code, String history, String from, String to, boolean catchExceptions)
-    throws NoResponseException {
+  public AldaResponse play(String code, String history, String from, String to)
+    throws NoAvailableWorkerException, UnsuccessfulException,
+           NoResponseException {
 
     String jobId = UUID.randomUUID().toString();
 
@@ -323,13 +301,21 @@ public class AldaServer extends AldaProcess {
     AldaResponse res = req.send(3000, 0);
 
     if (!res.success) {
-      error(res.body, catchExceptions);
-      return null;
+      String noWorkersYetMsg = "No worker processes are ready yet";
+      String workersBusyMsg = "All worker processes are currently busy";
+
+      if (res.body.contains(noWorkersYetMsg) ||
+          res.body.contains(workersBusyMsg)) {
+        throw new NoAvailableWorkerException(res.body);
+      } else {
+        throw new UnsuccessfulException(res.body);
+      }
     }
 
     if (res.workerAddress == null) {
-      error("No worker address included in response; unable to check for status.", catchExceptions);
-      return null;
+      throw new UnsuccessfulException(
+        "No worker address included in response; unable to check for status."
+      );
     }
 
     String status = "requested";
@@ -339,15 +325,10 @@ public class AldaServer extends AldaProcess {
 
       // Ensures that any update we process is for this score, and not a
       // previous one.
-      if (!update.jobId.equals(jobId)) {
-        continue;
-      }
+      if (!update.jobId.equals(jobId)) continue;
 
-      // If there was an error server-side, display it and stop.
-      if (!update.success) {
-        error(update.body, catchExceptions);
-        break;
-      }
+      // Bail out if there was some problem server-side.
+      if (!update.success) throw new UnsuccessfulException(update.body);
 
       // Update the job status if it's different.
       if (!update.body.equals(status)) {
@@ -361,73 +342,51 @@ public class AldaServer extends AldaProcess {
 
       // If the job is still pending, pause and then keep looping.
       if (update.pending) {
-        try {
-          Thread.sleep(PLAY_STATUS_INTERVAL);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          System.out.println("Thread interrupted.");
-        }
+        Util.sleep(PLAY_STATUS_INTERVAL);
       } else {
         // We succeeded!
         return update;
       }
     }
-
-    // If we got this far, we don't have anything to return.
-    return null;
   }
 
   public void play(File file, String from, String to)
-    throws NoResponseException {
-    try {
-      String fileBody = Util.readFile(file);
-      play(fileBody, from, to);
-    } catch (IOException e) {
-      error("Unable to read file: " + file.getAbsolutePath());
-    }
+    throws NoAvailableWorkerException, UnsuccessfulException,
+           SystemException, NoResponseException {
+    String fileBody = Util.readFile(file);
+    play(fileBody, from, to);
   }
 
   public AldaResponse playFromRepl(String input, String history, String from,
-    String to, boolean catchExceptions)
-    throws NoResponseException {
+                                   String to)
+    throws NoAvailableWorkerException, UnsuccessfulException,
+           NoResponseException {
     int retries = BUSY_WORKER_TIMEOUT / BUSY_WORKER_RETRY_INTERVAL;
-    return playFromRepl(input, history, from, to, catchExceptions, retries);
+    return playFromRepl(input, history, from, to, retries);
   }
 
   public AldaResponse playFromRepl(String input, String history, String from,
-    String to, boolean catchExceptions, int retries)
-    throws NoResponseException {
-    // Do some retries if workers aren't available just yet.
-    String noWorkersYetMsg = "No worker processes are ready yet";
-    String workersBusyMsg = "All worker processes are currently busy";
+                                   String to, int retries)
+    throws NoAvailableWorkerException, UnsuccessfulException,
+           NoResponseException {
+    // Placeholder exception; we should never see this get thrown.
+    String msg = "Unexpected error trying to play input from the Alda REPL.";
+    NoAvailableWorkerException error = new NoAvailableWorkerException(msg);
 
-    // This message is a fallback in the event that we don't get an error
-    // message.
-    String error = "Unknown error trying to play line of REPL input.";
-
+    // Retry until we get a NoAvailableWorkerException `retries` times.
     while (retries >= 0) {
       try {
-        return play(input, history.toString(), null, null, false);
-      } catch (Throwable e) {
-        String thisError = e.getMessage();
-        if (thisError != null)
-          error = thisError;
-
-        if (error.contains(noWorkersYetMsg) || error.contains(workersBusyMsg)) {
-          try {
-            Thread.sleep(BUSY_WORKER_RETRY_INTERVAL);
-          } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(ie);
-          }
-          retries--;
-        } else {
-          throw(e);
-        }
+        return play(input, history.toString(), null, null);
+      } catch (NoAvailableWorkerException e) {
+        error = e;
+        Util.sleep(BUSY_WORKER_RETRY_INTERVAL);
+        retries--;
       }
     }
 
-    throw new RuntimeException(error);
+    // Throw the most recent NoAvailableWorkerException before we ran out of
+    // retries.
+    throw error;
   }
 
 
@@ -441,18 +400,14 @@ public class AldaServer extends AldaProcess {
     return req.send();
   }
 
-  public void stop() {
+  public void stop() throws UnsuccessfulException {
     AldaRequest req = new AldaRequest(host, port);
     req.command = "stop-playback";
 
     try {
       AldaResponse res = req.send();
-
-      if (res.success) {
-        msg(res.body);
-      } else {
-        error(res.body);
-      }
+      if (!res.success) throw new UnsuccessfulException(res.body);
+      msg(res.body);
     } catch (NoResponseException e) {
       announceServerDown();
     }
@@ -460,35 +415,31 @@ public class AldaServer extends AldaProcess {
 
   /**
    * Raw parsing function
-   * @return Returns the result of the parse, or null if the parse failed (and no exception was thrown)
+   * @return Returns the result of the parse.
    */
-  public String parseRaw(String code, boolean parseExceptions) throws NoResponseException {
+  public String parseRaw(String code) throws NoResponseException, ParseError {
     AldaRequest req = new AldaRequest(host, port);
     req.command = "parse";
     req.body = code;
     AldaResponse res = req.send();
 
-    if (res.success) {
-      return res.body;
-    } else {
-      error(res.body, parseExceptions);
-      return null;
+    if (!res.success) {
+      throw new ParseError(res.body);
     }
+
+    return res.body;
   }
 
-  public void parse(String code) throws NoResponseException {
-    String res = parseRaw(code, true);
+  public void parse(String code) throws NoResponseException, ParseError {
+    String res = parseRaw(code);
     if (res != null) {
       System.out.println(res);
     }
   }
 
-  public void parse(File file) throws NoResponseException {
-    try {
-      String fileBody = Util.readFile(file);
-      parse(fileBody);
-    } catch (IOException e) {
-      error("Unable to read file: " + file.getAbsolutePath());
-    }
+  public void parse(File file)
+    throws NoResponseException, ParseError, SystemException {
+    String fileBody = Util.readFile(file);
+    parse(fileBody);
   }
 }

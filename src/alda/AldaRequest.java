@@ -1,5 +1,7 @@
 package alda;
 
+import alda.error.NoResponseException;
+
 import com.google.gson.Gson;
 
 import org.zeromq.ZContext;

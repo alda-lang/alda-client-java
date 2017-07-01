@@ -1,6 +1,8 @@
 
 package alda.repl.commands;
 
+import alda.error.NoResponseException;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
@@ -33,7 +35,7 @@ public interface ReplCommand {
    */
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
-  throws alda.NoResponseException;
+  throws NoResponseException;
 
   /**
    * Returns the documentation summary of this ReplCommand

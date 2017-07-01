@@ -3,8 +3,9 @@ package alda.repl.commands;
 import alda.AldaClient;
 import alda.AldaResponse.AldaScore;
 import alda.AldaServer;
+import alda.error.NoResponseException;
+import alda.error.SystemException;
 
-import java.io.IOException;
 import java.util.function.Consumer;
 
 import jline.console.ConsoleReader;
@@ -15,10 +16,10 @@ public class ReplList implements ReplCommand {
   @Override
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
-  throws alda.NoResponseException {
+  throws NoResponseException {
     try {
       AldaClient.listProcesses(LIST_PROCESSES_TIMEOUT);
-    } catch (IOException e) {
+    } catch (SystemException e) {
       System.out.println("Error trying to list Alda processes:");
       e.printStackTrace();
     }

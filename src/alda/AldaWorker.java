@@ -1,5 +1,7 @@
 package alda;
 
+import alda.error.InvalidOptionsException;
+
 public class AldaWorker extends AldaProcess {
   public AldaWorker(int port, boolean verbose) {
     this.port = port;

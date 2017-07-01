@@ -1,5 +1,8 @@
 package alda;
 
+import alda.error.UnsuccessfulException;
+import alda.error.SystemException;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
@@ -28,21 +31,24 @@ public class AldaClient {
     }
   }
 
-  public static void updateAlda() throws URISyntaxException {
-    // Get the path to the current alda executable
-    String programPath = Util.getProgramPath();
-    String latestApiStr = "https://api.github.com/repos/alda-lang/alda/releases/latest";
-    String apiResult;
+  public static void updateAlda()
+  throws SystemException, UnsuccessfulException {
+    // The path to the current alda executable
+    String programPath;
+
+    try {
+      programPath = Util.getProgramPath();
+    } catch (URISyntaxException e) {
+      throw new SystemException(
+        "Could not determine the path to the current `alda` executable.", e
+      );
+    }
+
     String clientVersion = version();
 
     // Make a call to the Github API to get the latest version number/download URL
-    try {
-      apiResult = Util.makeApiCall(latestApiStr);
-    } catch (IOException e) {
-      System.err.println("There was an error connecting to the Github API.");
-      e.printStackTrace();
-      return;
-    }
+    String latestApiStr = "https://api.github.com/repos/alda-lang/alda/releases/latest";
+    String apiResult = Util.makeApiCall(latestApiStr);
 
     // Turn api result into version numbers and links
     Gson gson = new Gson();
@@ -68,8 +74,10 @@ public class AldaClient {
     }
 
     if (downloadURL == null) {
-      System.err.println("Alda download link not found for your platform.");
-      return;
+      throw new UnsuccessfulException(
+        "Alda download link not found for your platform. Please file an " +
+        "issue at: https://github.com/alda-lang/alda-client-java/issues/new"
+      );
     }
 
     // Request confirmation from user:
@@ -83,14 +91,8 @@ public class AldaClient {
 
     System.out.println("Downloading " + downloadURL + "...");
 
-    try {
-      // Download file from downloadURL to programPath
-      Util.downloadFile(downloadURL, programPath);
-    } catch (IOException e) {
-      System.err.println("Error while downloading file:");
-      e.printStackTrace();
-      return;
-    }
+    // Download file from downloadURL to programPath
+    Util.downloadFile(downloadURL, programPath);
 
     // set as executable if on UNIX
     if (SystemUtils.IS_OS_UNIX) {
@@ -104,8 +106,7 @@ public class AldaClient {
 
 
 
-  public static void listProcesses(int timeout) throws IOException {
-
+  public static void listProcesses(int timeout) throws SystemException {
     IAldaProcessReader processReader = getProcessReader();
     List<AldaProcess> processes = processReader.getProcesses();
 
@@ -154,7 +155,8 @@ public class AldaClient {
     }
   }
 
-  public static boolean checkForExistingServer(int port) throws IOException {
+  public static boolean checkForExistingServer(int port)
+    throws SystemException {
     IAldaProcessReader processReader = getProcessReader();
     List<AldaProcess> processes = processReader.getProcesses();
 

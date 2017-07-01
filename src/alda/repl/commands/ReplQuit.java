@@ -1,8 +1,9 @@
 package alda.repl.commands;
 
-import alda.AldaServer;
-import alda.Util;
 import alda.AldaResponse.AldaScore;
+import alda.AldaServer;
+import alda.error.ExitCode;
+import alda.Util;
 import java.util.function.Consumer;
 import jline.console.ConsoleReader;
 
@@ -20,7 +21,7 @@ public  class ReplQuit implements ReplCommand {
           "You have unsaved changes. Are you sure you want to quit?",
           "yes", "no").equals("yes")) {
       // Bye! =)
-      System.exit(0);
+      ExitCode.SUCCESS.exit();
     }
   }
   @Override

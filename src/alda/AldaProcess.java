@@ -1,5 +1,7 @@
 package alda;
 
+import alda.error.NoResponseException;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -31,12 +33,19 @@ public class AldaProcess {
     return checkForConnection(PING_TIMEOUT, PING_RETRIES);
   }
 
-  public boolean waitForConnection() {
+  // Waits until the process is confirmed to be up, or we reach the timeout.
+  //
+  // Throws a NoResponseException if the timeout is reached.
+  public void waitForConnection() throws NoResponseException {
     // Calculate the number of retries before giving up, based on the fixed
     // STARTUP_RETRY_INTERVAL and the desired timeout in seconds.
     int retriesPerSecond = 1000 / this.STARTUP_RETRY_INTERVAL;
     int retries = this.timeout * retriesPerSecond;
 
-    return checkForConnection(this.STARTUP_RETRY_INTERVAL, retries);
+    if (!checkForConnection(this.STARTUP_RETRY_INTERVAL, retries)) {
+      throw new NoResponseException(
+        "Timed out waiting for response from the server."
+      );
+    }
   }
 }
