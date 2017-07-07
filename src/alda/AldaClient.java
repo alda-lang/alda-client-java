@@ -82,13 +82,25 @@ public class AldaClient {
     }
 
     // Workaround for windows. See #24 #25
-    if (SystemUtils.IS_OS_WINDOWS) {
-      System.out.println("WARNING: The windows updater is currently disabled due to limitations in windows.");
-      System.out.println("For more infromation, see https://github.com/alda-lang/alda-client-java/issues/24");
-      System.out.println("To update alda, ensure all alda servers and clients are down and run the following command:\n");
-      System.out.println("powershell -Command Invoke-WebRequest -Uri \"" + downloadURL + "\" -OutFile \"" + programPath + "\"\n");
-      System.out.println("Or reinstall alda manually from https://github.com/alda-lang/alda/releases");
-      System.out.println("If that does not work, please reboot your system and try again.");
+    if (!SystemUtils.IS_OS_WINDOWS) {
+      System.out.println(
+        "Automated updates to alda.exe are not possible due to limitations of the Windows OS.\n" +
+        "For more information, see: https://github.com/alda-lang/alda-client-java/issues/24\n" +
+        "\n" +
+
+        "To update alda.exe, first, make sure that the server is not up by running:\n" +
+        "\n" +
+        "   alda down\n" +
+        "\n" +
+
+        "Then, run the following command in your terminal to download the latest alda.exe:\n" +
+        "\n" +
+        "    powershell -Command Invoke-WebRequest -Uri \"" + downloadURL + "\" -OutFile \"" + programPath + "\"\n" +
+        "\n" +
+
+        "Or, if you'd prefer, you can install the latest alda.exe yourself from:\n" +
+        "https://github.com/alda-lang/alda/releases\n"
+      );
       ExitCode.SUCCESS.exit();
     }
 
