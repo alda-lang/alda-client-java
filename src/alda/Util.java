@@ -14,8 +14,10 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URI;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -172,8 +174,8 @@ public final class Util {
   }
 
   public static String getProgramPath() throws URISyntaxException {
-    return Main.class.getProtectionDomain().getCodeSource().getLocation()
-               .toURI().getPath();
+    URI pathURI = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+    return Paths.get(pathURI).toFile().toString();
   }
 
   public static String makeApiCall(String apiRequest) throws SystemException {

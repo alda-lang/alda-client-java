@@ -2,6 +2,7 @@ package alda;
 
 import alda.error.UnsuccessfulException;
 import alda.error.SystemException;
+import alda.error.ExitCode;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -78,6 +79,17 @@ public class AldaClient {
         "Alda download link not found for your platform. Please file an " +
         "issue at: https://github.com/alda-lang/alda-client-java/issues/new"
       );
+    }
+
+    // Workaround for windows. See #24 #25
+    if (SystemUtils.IS_OS_WINDOWS) {
+      System.out.println("WARNING: The windows updater is currently disabled due to limitations in windows.");
+      System.out.println("For more infromation, see https://github.com/alda-lang/alda-client-java/issues/24");
+      System.out.println("To update alda, ensure all alda servers and clients are down and run the following command:\n");
+      System.out.println("powershell -Command Invoke-WebRequest -Uri \"" + downloadURL + "\" -OutFile \"" + programPath + "\"\n");
+      System.out.println("Or reinstall alda manually from https://github.com/alda-lang/alda/releases");
+      System.out.println("If that does not work, please reboot your system and try again.");
+      ExitCode.SUCCESS.exit();
     }
 
     // Request confirmation from user:
