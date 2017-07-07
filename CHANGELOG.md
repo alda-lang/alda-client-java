@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 0.4.1 (2017-07-07)
+
+* Running `alda update` has been known not to work on Windows because of
+  limitations of the OS: Windows apparently will not let you download a new
+  version of a program to replace the program while it is running.
+
+  As a workaround, if your OS is Windows and you run `alda update`, we now print
+  detailed instructions with a command to run in your terminal that will update
+  alda.exe.
+
 ## 0.4.0 (2017-07-01)
 
 * Prior to this release, the client would almost always exit with an exit code
