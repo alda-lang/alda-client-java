@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.4.2 (2017-07-16)
+
+* Fixed a bug where the `--history` option to the `alda play` command was being
+  ignored if the `--file` option was used or code was being piped into STDIN.
+
 ## 0.4.1 (2017-07-07)
 
 * Running `alda update` has been known not to work on Windows because of

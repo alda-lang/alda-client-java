@@ -291,13 +291,14 @@ public class Main {
 
           switch (inputType) {
             case "file":
-              server.play(play.file, play.from, play.to);
+              String code = Util.readFile(play.file);
+              server.play(code, play.history, play.from, play.to);
               break;
             case "code":
               server.play(play.code, play.history, play.from, play.to);
               break;
             case "stdin":
-              server.play(Util.getStdIn(), play.from, play.to);
+              server.play(Util.getStdIn(), play.history, play.from, play.to);
               break;
             default:
               throw new InvalidOptionsException(

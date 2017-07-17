@@ -350,13 +350,6 @@ public class AldaServer extends AldaProcess {
     }
   }
 
-  public void play(File file, String from, String to)
-    throws NoAvailableWorkerException, UnsuccessfulException,
-           SystemException, NoResponseException {
-    String fileBody = Util.readFile(file);
-    play(fileBody, from, to);
-  }
-
   public AldaResponse playFromRepl(String input, String history, String from,
                                    String to)
     throws NoAvailableWorkerException, UnsuccessfulException,
