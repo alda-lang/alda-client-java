@@ -82,7 +82,7 @@ public class AldaClient {
     }
 
     // Workaround for windows. See #24 #25
-    if (!SystemUtils.IS_OS_WINDOWS) {
+    if (SystemUtils.IS_OS_WINDOWS) {
       System.out.println(
         "Automated updates to alda.exe are not possible due to limitations of the Windows OS.\n" +
         "For more information, see: https://github.com/alda-lang/alda-client-java/issues/24\n" +
