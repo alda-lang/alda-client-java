@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.4.4 (2017-07-28)
+
+* Added a `--history-file` (`-I`) option. It's like `--history`, except that it
+  takes the name of a file containing Alda code to be used as history.
+
 ## 0.4.3 (2017-07-16)
 
 * Bugfix: reversed logic in the `alda update` command so that the Windows update
@@ -25,7 +30,10 @@
 * Prior to this release, the client would almost always exit with an exit code
   of 0, even if there was an error of some kind.
 
-  Starting with this release, Alda has a handful of meaningful [exit codes](https://github.com/alda-lang/alda-client-java/blob/master/src/alda/error/ExitCode.java). Crucially, there is now a distinction between 0 (success) and non-0 (error/failure).
+  Starting with this release, Alda has a handful of meaningful [exit
+  codes](https://github.com/alda-lang/alda-client-java/blob/master/src/alda/error/ExitCode.java).
+  Crucially, there is now a distinction between 0 (success) and non-0
+  (error/failure).
 
 * Minor improvements to a handful of error messages.
 

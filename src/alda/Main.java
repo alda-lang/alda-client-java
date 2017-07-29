@@ -116,6 +116,11 @@ public class Main {
                description = "Alda code that can be referenced but will not be played")
     public String history = "";
 
+    @Parameter(names = {"-I", "--history-file"},
+               description = "A file containing Alda code that can be referenced but will not be played",
+               converter = FileConverter.class)
+    public File historyFile;
+
     @Parameter(names = {"-F", "--from"},
                description = "A time marking or marker from which to start " +
                              "playback")
@@ -288,6 +293,15 @@ public class Main {
         case "play":
           handleCommandSpecificHelp(jc, "play", play);
           inputType = Util.inputType(play.file, play.code);
+
+          if (play.historyFile != null) {
+            if (!play.history.isEmpty())
+              throw new InvalidOptionsException(
+                "--history and --history-file options cannot be used together."
+              );
+
+            play.history = Util.readFile(play.historyFile);
+          }
 
           switch (inputType) {
             case "file":
