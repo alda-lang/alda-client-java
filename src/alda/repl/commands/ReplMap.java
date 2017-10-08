@@ -23,7 +23,7 @@ public class ReplMap implements ReplCommand {
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
   throws NoResponseException {
     try {
-      String res = server.parseRaw(history.toString());
+      String res = server.parseRaw(history.toString(), "data");
 
       if (res != null) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();

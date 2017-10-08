@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 0.4.5 (2017-10-07)
+
+* Added an `--output` (`-o`) option to the `alda parse` command that allows you
+  to specify what should be output. Valid values are:
+
+  * `data` (default) is the map of score data that includes instruments, events,
+    etc.
+
+  * `events` is the sequence of events parsed from the score.
+
 ## 0.4.4 (2017-07-28)
 
 * Added a `--history-file` (`-I`) option. It's like `--history`, except that it

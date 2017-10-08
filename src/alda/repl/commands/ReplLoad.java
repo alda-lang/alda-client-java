@@ -76,7 +76,7 @@ public class ReplLoad implements ReplCommand {
       String res = "";
       try {
         // TODO: include a jobId, add parsing to job system on the server-side
-        res = server.parseRaw(newHistory.toString());
+        res = server.parseRaw(newHistory.toString(), "data");
       } catch (NoResponseException e) {
         // Let the REPL handle the exception by offering to start the server.
         throw e;

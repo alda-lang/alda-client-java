@@ -144,6 +144,10 @@ public class Main {
     @Parameter(names = {"-c", "--code"},
                description = "Supply Alda code as a string")
     public String code;
+
+    @Parameter(names = {"-o", "--output"},
+               description = "Return the output as \"data\" or \"events\"")
+    public String outputType = "data";
   }
 
   public static void handleCommandSpecificHelp(JCommander jc, String name, AldaCommand c) {
@@ -221,6 +225,7 @@ public class Main {
       // used for play and parse commands
       String mode;
       String inputType;
+      String outputType;
 
       // used for up and downup commands
       boolean success;
@@ -332,15 +337,21 @@ public class Main {
           handleCommandSpecificHelp(jc, "parse", parse);
           inputType = Util.inputType(parse.file, parse.code);
 
+          if (!(parse.outputType.equals("data") ||
+                parse.outputType.equals("events")))
+            throw new InvalidOptionsException(
+              "Invalid --output type. Valid output types are: data, events"
+            );
+
           switch (inputType) {
             case "file":
-              server.parse(parse.file);
+              server.parse(parse.file, parse.outputType);
               break;
             case "code":
-              server.parse(parse.code);
+              server.parse(parse.code, parse.outputType);
               break;
             case "stdin":
-              server.parse(Util.getStdIn());
+              server.parse(Util.getStdIn(), parse.outputType);
               break;
             default:
               throw new InvalidOptionsException(

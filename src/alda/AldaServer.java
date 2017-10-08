@@ -410,10 +410,13 @@ public class AldaServer extends AldaProcess {
    * Raw parsing function
    * @return Returns the result of the parse.
    */
-  public String parseRaw(String code) throws NoResponseException, ParseError {
+  public String parseRaw(String code, String outputType)
+    throws NoResponseException, ParseError {
     AldaRequest req = new AldaRequest(host, port);
     req.command = "parse";
     req.body = code;
+    req.options = new AldaRequestOptions();
+    req.options.output = outputType;
     AldaResponse res = req.send();
 
     if (!res.success) {
@@ -423,16 +426,17 @@ public class AldaServer extends AldaProcess {
     return res.body;
   }
 
-  public void parse(String code) throws NoResponseException, ParseError {
-    String res = parseRaw(code);
+  public void parse(String code, String outputType)
+    throws NoResponseException, ParseError {
+    String res = parseRaw(code, outputType);
     if (res != null) {
       System.out.println(res);
     }
   }
 
-  public void parse(File file)
+  public void parse(File file, String outputType)
     throws NoResponseException, ParseError, SystemException {
     String fileBody = Util.readFile(file);
-    parse(fileBody);
+    parse(fileBody, outputType);
   }
 }
