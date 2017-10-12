@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 0.4.7 (2017-10-12)
+
+* Fixed a weird issue where, after successfully updating Alda via `alda update`,
+  the line `ExitCode.SUCCESS.exit()` would result in a `NoClassDefFoundError`.
+
+  This is black magic to me and I don't understand why it was happening (maybe a
+  Java guru out there can enlighten me), but in any case, I noticed that
+  `ExitCode.SUCCESS.exit()` is called after the `updateAlda` method returns
+  anyway, so we can just replace the first `ExitCode.SUCCESS.exit()` with a
+  `return;` (letting the second `ExitCode.SUCCESS.exit()` take care of exiting)
+  and that ought to fix it.
+
 ## 0.4.6 (2017-10-12)
 
 * Improved the timing of waiting for the server to stop before starting a new

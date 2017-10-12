@@ -101,7 +101,7 @@ public class AldaClient {
         "Or, if you'd prefer, you can install the latest alda.exe yourself from:\n" +
         "https://github.com/alda-lang/alda/releases\n"
       );
-      ExitCode.SUCCESS.exit();
+      return;
     }
 
     // Request confirmation from user:
