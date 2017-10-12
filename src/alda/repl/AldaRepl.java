@@ -215,7 +215,6 @@ public class AldaRepl {
     while (true) {
       String input = "";
       try {
-        // TODO add dynamic prompts based on the instrument
         input = r.readLine(promptPrefix + PROMPT);
       } catch (IOException e) {
         System.err.println("An error was detected when we tried to read a line.");

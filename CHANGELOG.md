@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## 0.4.6 (2017-10-12)
+
+* Improved the timing of waiting for the server to stop before starting a new
+  one when running the `alda downup` command.
+
+  Before, this was just guesswork, and often times, the server wouldn't be down
+  yet, so when a new server tried to start, it would fail with the message:
+
+  ```
+  There is already a server trying to start on this port. Please be patient -- this can take a while.
+  ```
+
+  Now, we're actually checking to see when the server stops responding, and
+  waiting until that's the case before we try to start a new server.
+
+  Unfortunately, there is still a bit of guesswork here because the message
+  above is triggered by (assuming you're running OS X or Linux) a check to see
+  if there is an Alda server process in your OS that was started on the same
+  port you are trying to use. There is still a brief window of time between when
+  the server stops responding to requests and when the process has terminated.
+
+  As such, I think there is room for improvement in the future, and you might
+  still see the message above from time to time. But, with this release, things
+  should at least be better than they were before.
+
+* Expanded the scope of the `-t` / `--timeout` option to include how long (in
+  seconds) the Alda command-line client should wait, after running `alda down`
+  or `alda downup`, for confirmation that the server has gone down. The default
+  value is still 30 seconds, which should be more than enough time on most
+  systems.
+
 ## 0.4.5 (2017-10-07)
 
 * Added an `--output` (`-o`) option to the `alda parse` command that allows you

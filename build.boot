@@ -23,7 +23,7 @@
 (require '[adzerk.bootlaces         :refer :all]
          '[radicalzephyr.boot-junit :refer (junit)])
 
-(def ^:const +version+ "0.4.5")
+(def ^:const +version+ "0.4.6")
 
 (bootlaces! +version+)
 

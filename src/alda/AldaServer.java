@@ -22,7 +22,10 @@ import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
 
 public class AldaServer extends AldaProcess {
+  private static final int PING_TIMEOUT = 100; // ms
+  private static final int PING_RETRIES = 5;
   private static final int STARTUP_RETRY_INTERVAL = 250; // ms
+  private static final int SHUTDOWN_RETRY_INTERVAL = 250; // ms
   private static final int STATUS_RETRY_INTERVAL = 200;  // ms
   private static final int STATUS_RETRIES = 10;
   private static final int PLAY_STATUS_INTERVAL = 250;   // ms
@@ -30,8 +33,6 @@ public class AldaServer extends AldaProcess {
   // Relevant to playing input from the REPL.
   private static final int BUSY_WORKER_TIMEOUT = 10000;      // ms
   private static final int BUSY_WORKER_RETRY_INTERVAL = 500; // ms
-
-  private static final int PAUSE_BEFORE_RESTARTING_SERVER = 500; // ms
 
   public AldaServer(String host, int port, int timeout, boolean verbose, boolean quiet) {
     this.host = normalizeHost(host);
@@ -41,6 +42,70 @@ public class AldaServer extends AldaProcess {
     this.quiet = quiet;
 
     AnsiConsole.systemInstall();
+  }
+
+  // Calculate the number of retries before giving up, based on a fixed retry
+  // interval and the desired overall timeout in seconds.
+  private int calculateRetries(int timeout, int interval) {
+    int retriesPerSecond = 1000 / interval;
+    return timeout * retriesPerSecond;
+  }
+
+  private boolean ping(int timeout, int retries) throws NoResponseException {
+    AldaRequest req = new AldaRequest(this.host, this.port);
+    req.command = "ping";
+    AldaResponse res = req.send(timeout, retries);
+    return res.success;
+  }
+
+  public boolean checkForConnection(int timeout, int retries) {
+    try {
+      return ping(timeout, retries);
+    } catch (NoResponseException e) {
+      return false;
+    }
+  }
+
+  public boolean checkForConnection() {
+    return checkForConnection(PING_TIMEOUT, PING_RETRIES);
+  }
+
+  // Waits until the process is confirmed to be up, or we reach the timeout.
+  //
+  // Throws a NoResponseException if the timeout is reached.
+  public void waitForConnection() throws NoResponseException {
+    int retries = calculateRetries(timeout, STARTUP_RETRY_INTERVAL);
+
+    if (!checkForConnection(STARTUP_RETRY_INTERVAL, retries)) {
+      throw new NoResponseException(
+        "Timed out waiting for response from the server."
+      );
+    }
+  }
+
+  // Waits until the process is confirmed to be down, i.e. there is no response
+  // to "ping," OR, there is a response to "ping," but the response indicates
+  // "success": false.
+  //
+  // Throws a NoResponseException if the process is still pingable after the
+  // timeout.
+  public void waitForLackOfConnection() throws NoResponseException {
+    int retries = calculateRetries(timeout, SHUTDOWN_RETRY_INTERVAL);
+
+    while (retries >= 0) {
+      try {
+        if (!ping(SHUTDOWN_RETRY_INTERVAL, 0)) return;
+      } catch (NoResponseException e) {
+        return;
+      }
+
+      Util.sleep(SHUTDOWN_RETRY_INTERVAL);
+      retries--;
+    }
+
+    throw new NoResponseException(
+      "Timed out waiting for the server to shut down."
+    );
   }
 
   private static String normalizeHost(String host) {
@@ -220,10 +285,10 @@ public class AldaServer extends AldaProcess {
            SystemException {
     down();
 
-    // FIXME: this is prone to failure if the timing isn't just right. It would
-    // be better to loop, checking if the server is still up, until it isn't,
-    // and then proceed.
-    Util.sleep(PAUSE_BEFORE_RESTARTING_SERVER);
+    waitForLackOfConnection();
+    // The process can still hang around sometimes, causing upBg to fail if we
+    // try to do it too soon. Giving it a little extra time here as a buffer.
+    Util.sleep(1000);
 
     System.out.println();
     upBg(numberOfWorkers);

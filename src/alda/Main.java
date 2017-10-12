@@ -50,7 +50,7 @@ public class Main {
     public int port = 27713;
 
     @Parameter(names = {"-t", "--timeout"},
-               description = "The number of seconds to wait for a server to start before giving up.")
+               description = "The number of seconds to wait for a server to start up or shut down, before giving up.")
     public int timeout = 30;
 
     @Parameter(names = {"-w", "--workers"},
