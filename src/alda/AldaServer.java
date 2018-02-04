@@ -434,7 +434,7 @@ public class AldaServer extends AldaProcess {
     // Retry until we get a NoAvailableWorkerException `retries` times.
     while (retries >= 0) {
       try {
-        return play(input, history.toString(), null, null);
+        return play(input, history.toString(), from, to);
       } catch (NoAvailableWorkerException e) {
         error = e;
         Util.sleep(BUSY_WORKER_RETRY_INTERVAL);

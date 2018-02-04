@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+* Fixed a bug in the Alda REPL where the `:play from` and `to` options were
+  being completely ignored.
+
 ## 0.4.7 (2017-10-12)
 
 * Fixed a weird issue where, after successfully updating Alda via `alda update`,
