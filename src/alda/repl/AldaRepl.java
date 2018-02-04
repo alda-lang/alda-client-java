@@ -1,6 +1,9 @@
 package alda.repl;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -8,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
+import jline.console.history.FileHistory;
 import jline.console.UserInterruptException;
 
 import org.fusesource.jansi.AnsiConsole;
@@ -54,6 +57,7 @@ public class AldaRepl {
   private ReplCommandManager manager;
 
   private StringBuffer history;
+  private FileHistory fileHistory;
 
   private String promptPrefix = "";
 
@@ -65,8 +69,21 @@ public class AldaRepl {
     manager = new ReplCommandManager();
     try {
       r = new ConsoleReader();
+
+      // Capture Ctrl-C and throw a jline.console.UserInterruptException.
       r.setHandleUserInterrupt(true);
+
+      // Disable default behavior where JLine treats `!` like a Bash expansion
+      // character.
       r.setExpandEvents(false);
+
+      // Enable history file.
+      Path historyFile = Paths.get(System.getProperty("user.home"),
+                                   ".alda-repl-history");
+      if (!historyFile.toFile().exists()) Files.createFile(historyFile);
+      fileHistory = new FileHistory(historyFile.toFile());
+      r.setHistory(fileHistory);
+      r.setHistoryEnabled(true);
     } catch (IOException e) {
       System.err.println("An error was detected when we tried to read a line.");
       e.printStackTrace();
@@ -217,6 +234,7 @@ public class AldaRepl {
       String input = "";
       try {
         input = r.readLine(promptPrefix + PROMPT);
+        fileHistory.flush();
       } catch (IOException e) {
         System.err.println("An error was detected when we tried to read a line.");
         e.printStackTrace();

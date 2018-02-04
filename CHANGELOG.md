@@ -13,6 +13,13 @@
 
   For context, see [this issue](https://github.com/alda-lang/alda/issues/125).
 
+* Enabled persistent history for the Alda REPL. For example, if you start a REPL
+  session and enter a bunch of lines of input, then close the session and start
+  a new one, you can access the lines you typed in the previous session by
+  pressing the Up arrow.
+
+  History is stored in a file at `~/.alda-repl-history`.
+
 ## 0.4.7 (2017-10-12)
 
 * Fixed a weird issue where, after successfully updating Alda via `alda update`,
