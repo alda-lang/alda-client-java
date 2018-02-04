@@ -39,7 +39,7 @@ import org.apache.commons.lang3.SystemUtils;
 
 public final class Util {
 
-  // Thread.sleep, but with boilerplate handling InterruptException by
+  // Thread.sleep, but with boilerplate handling InterruptedException by
   // re-interrupting the thread and throwing a RuntimeException.
   public static void sleep(int ms) {
     try {
