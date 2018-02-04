@@ -5,6 +5,14 @@
 * Fixed a bug in the Alda REPL where the `:play from` and `to` options were
   being completely ignored.
 
+* Fixed issues where `!` is not escaped properly in the Alda REPL.
+
+  This is something that had been fixed previously in the Clojure version of the
+  Alda REPL, but not ported over when we rewrote the REPL as part of the Java
+  client.
+
+  For context, see [this issue](https://github.com/alda-lang/alda/issues/125).
+
 ## 0.4.7 (2017-10-12)
 
 * Fixed a weird issue where, after successfully updating Alda via `alda update`,

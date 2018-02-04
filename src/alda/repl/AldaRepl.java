@@ -65,7 +65,8 @@ public class AldaRepl {
     manager = new ReplCommandManager();
     try {
       r = new ConsoleReader();
-	  r.setHandleUserInterrupt(true);
+      r.setHandleUserInterrupt(true);
+      r.setExpandEvents(false);
     } catch (IOException e) {
       System.err.println("An error was detected when we tried to read a line.");
       e.printStackTrace();
