@@ -10,6 +10,7 @@ import java.io.Console;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -19,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -307,5 +309,17 @@ public final class Util {
     require.invoke(Symbol.create(var.getNamespace()));
     ISeq argsSeq = ArraySeq.create(args);
     Clojure.var(var.getNamespace(), var.getName()).applyTo(argsSeq);
+  }
+  
+  public static class JsonElementBigIntegerComparator implements Comparator<JsonElement> {
+    public static JsonElementBigIntegerComparator INSTANCE = new JsonElementBigIntegerComparator();
+     
+    @Override
+    public int compare(JsonElement arg0, JsonElement arg1) {
+      BigInteger v0 = arg0.getAsBigInteger();
+      BigInteger v1 = arg1.getAsBigInteger();
+      return v0.compareTo(v1);
+    }
+    
   }
 }
