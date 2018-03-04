@@ -28,37 +28,41 @@ public class ReplInfo implements ReplCommand {
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
                       throws NoResponseException {
-  try {
-    String res = server.parseRaw(history.toString(), "data");
-    if(res == null) {
-      System.err.println("An internal error occurred when reading the score.");
-    } else {
-        JsonObject scoreMap = gson.fromJson(res, JsonObject.class);
-  
-        StringBuilder sb = new StringBuilder();
-        sb.append("Instruments: ")
-          .append(getInstrumentsString(scoreMap))
-          .append(System.lineSeparator());
-        
-        sb.append("Current instruments: ")
-        .append(getCurrentInstrumentsString(scoreMap))
-        .append(System.lineSeparator());
-        
-        sb.append("Events: ")
-        .append(getEventsAmount(scoreMap))
-        .append(System.lineSeparator());
-     
-        sb.append("Markers: ")
-        .append(getMarkersString(scoreMap))
-        .append(System.lineSeparator());
-        
-    System.out.println(sb);
+    try {
+      String res = server.parseRaw(history.toString(), "data");
+      
+      if(res == null) {
+        System.err.println("An internal error occurred when reading the score.");
+      } else {
+          JsonObject scoreMap = gson.fromJson(res, JsonObject.class);
+          
+          System.out.println(getScoreInfoText(scoreMap));
+      }
+      
+    } catch(ParseError | JsonParseException e) {
+      server.error(e.getMessage());
     }
-    
-  } catch(ParseError | JsonParseException e) {
-    server.error(e.getMessage());
   }
+  
+  private StringBuilder getScoreInfoText(JsonObject scoreMap) throws ParseError, JsonParseException {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Instruments: ")
+      .append(getInstrumentsString(scoreMap))
+      .append(System.lineSeparator());
     
+    sb.append("Current instruments: ")
+    .append(getCurrentInstrumentsString(scoreMap))
+    .append(System.lineSeparator());
+    
+    sb.append("Events: ")
+    .append(getEventsAmount(scoreMap))
+    .append(System.lineSeparator());
+ 
+    sb.append("Markers: ")
+    .append(getMarkersString(scoreMap))
+    .append(System.lineSeparator());
+    
+    return sb;
   }
   
   private String getInstrumentsString(JsonObject scoreMap) {
@@ -83,7 +87,7 @@ public class ReplInfo implements ReplCommand {
     JsonObject markersJson = scoreMap.getAsJsonObject("markers");
     String markers = markersJson.entrySet()
       .stream()
-      .sorted(Comparator.comparing(Map.Entry::getValue, Util.JsonElementBigIntegerComparator.INSTANCE))
+      .sorted(Comparator.comparing(Map.Entry::getValue, Util.JsonElementFloatComparator.INSTANCE))
       .map(e -> e.getKey())
       .collect(Collectors.joining(", "));
     return markers.length() == 0 ? NO_RESULTS_PLACEHOLDER : markers;

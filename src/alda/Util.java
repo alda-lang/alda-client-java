@@ -311,14 +311,12 @@ public final class Util {
     Clojure.var(var.getNamespace(), var.getName()).applyTo(argsSeq);
   }
   
-  public static class JsonElementBigIntegerComparator implements Comparator<JsonElement> {
-    public static JsonElementBigIntegerComparator INSTANCE = new JsonElementBigIntegerComparator();
+  public static class JsonElementFloatComparator implements Comparator<JsonElement> {
+    public static JsonElementFloatComparator INSTANCE = new JsonElementFloatComparator();
      
     @Override
     public int compare(JsonElement arg0, JsonElement arg1) {
-      BigInteger v0 = arg0.getAsBigInteger();
-      BigInteger v1 = arg1.getAsBigInteger();
-      return v0.compareTo(v1);
+      return Float.compare(arg0.getAsFloat(), arg1.getAsFloat());
     }
     
   }
