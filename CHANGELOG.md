@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 0.5.0 (2018-03-08)
+
+* Added an `:info` command to the Alda REPL. It prints some user-readable
+  information about the current score, for example:
+
+  ```
+  p> :info
+  Instruments: piano-sFz6g
+  Current instruments: piano-sFz6g
+  Events: 6
+  Markers: start, one, two, three
+  ```
+
+  Thanks, [TBuc], for implementing this new feature!
+
 ## 0.4.8 (2018-02-03)
 
 * Fixed a bug in the Alda REPL where the `:play from` and `to` options were
@@ -208,3 +223,4 @@ Major thanks to [tobiasriedling] for both fixes!
 
 [tobiasriedling]: https://github.com/tobiasriedling
 [jgkamat]: https://github.com/jgkamat
+[TBuc]: https://github.com/TBuc
