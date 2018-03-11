@@ -57,11 +57,11 @@
 (deftask dev
   "Runs the Alda client for development.
 
-   To test changes to the Alda client, run `boot dev -a client -x \"args here\"`.
+   To test changes to the Alda client, run `boot dev -x \"args here\"`.
 
    For example:
 
-      boot dev -a client -x \"play --file /path/to/file.alda\"
+      boot dev -x \"play --file /path/to/file.alda\"
 
    The arguments must be a single command-line string to be passed to the
    command-line client as if entering them on the command line. The example
