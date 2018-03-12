@@ -17,11 +17,10 @@ import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
-//@org.junit.Ignore("Developing Commands test suite") // TODO remove before committing
 public class AldaClientTest {
 
     private final ByteArrayOutputStream stdOutContent = new ByteArrayOutputStream();
-/*
+
     @BeforeClass
     public static void checkTestEnvironment() throws Exception {
         if (TestEnvironment.getStatus() == TestEnvironmentStatus.STOPPED){
@@ -33,7 +32,7 @@ public class AldaClientTest {
     public static void tearDown() throws Exception {
         TestEnvironment.tearDown();
     }
-*/
+
     @Test
     public void listProcessesOutput() throws Exception {
         /*
