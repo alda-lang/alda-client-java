@@ -18,7 +18,20 @@ To see server output (including error stacktraces) for development purposes, you
 
 To stop a running server, run `alda stop`.
 
-### `boot dev` task
+### Automated test suite
+
+To run the automated test suite:
+
+    boot test
+
+These are integration tests that rely upon an `alda` executable being available
+at a known location. By default, it is assumed to be in `/usr/local/bin`, but if
+you have `alda` in another location (using `/usr/bin` here as an example), you
+can specify the location via the `ALDA_EXECUTABLE` environment variable:
+
+    ALDA_EXECUTABLE=/usr/bin/alda boot test
+
+### Manual testing
 
 To run the Alda client locally to test changes you've made to the code, you can run:
 
