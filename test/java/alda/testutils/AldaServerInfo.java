@@ -19,6 +19,10 @@ public class AldaServerInfo {
     public int getPort() {
         return port;
     }
+    
+    public String getHost() {
+        return host;
+    }
 
     public int getNumberOfWorkers() {
         return numberOfWorkers;

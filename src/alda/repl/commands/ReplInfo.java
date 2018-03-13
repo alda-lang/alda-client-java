@@ -51,16 +51,16 @@ public class ReplInfo implements ReplCommand {
       .append(System.lineSeparator());
     
     sb.append("Current instruments: ")
-    .append(getCurrentInstrumentsString(scoreMap))
-    .append(System.lineSeparator());
+      .append(getCurrentInstrumentsString(scoreMap))
+      .append(System.lineSeparator());
     
     sb.append("Events: ")
-    .append(getEventsAmount(scoreMap))
-    .append(System.lineSeparator());
+      .append(getEventsAmount(scoreMap))
+      .append(System.lineSeparator());
  
     sb.append("Markers: ")
-    .append(getMarkersString(scoreMap))
-    .append(System.lineSeparator());
+      .append(getMarkersString(scoreMap))
+      .append(System.lineSeparator());
     
     return sb;
   }
@@ -101,7 +101,7 @@ public class ReplInfo implements ReplCommand {
   
   @Override
   public String docSummary() {
-    return "Print current score info.";
+    return "Print current score synthetic info.";
   }
 
   @Override

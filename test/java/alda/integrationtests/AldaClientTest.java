@@ -35,7 +35,13 @@ public class AldaClientTest {
 
     @Test
     public void listProcessesOutput() throws Exception {
-
+        /*
+        while(TestEnvironment.getStatus() != TestEnvironmentStatus.STARTED) {
+          System.err.println("Awaiting test environment to start...");
+          Thread.sleep(1500);
+        }
+        */
+      
         // Redirect StdOut
         PrintStream oldStdOut = System.out;
         System.setOut(new PrintStream(stdOutContent));
