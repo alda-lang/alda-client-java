@@ -17,21 +17,13 @@ import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
+/*
+ * The test environment is created before, and teared down after,
+ * *all* the tests, by the class Alda.testutils.AldaJunitRunListener
+ */
 public class AldaClientTest {
 
     private final ByteArrayOutputStream stdOutContent = new ByteArrayOutputStream();
-
-    @BeforeClass
-    public static void checkTestEnvironment() throws Exception {
-        if (TestEnvironment.getStatus() == TestEnvironmentStatus.STOPPED){
-            TestEnvironment.setUp();
-        }
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        TestEnvironment.tearDown();
-    }
 
     @Test
     public void listProcessesOutput() throws Exception {

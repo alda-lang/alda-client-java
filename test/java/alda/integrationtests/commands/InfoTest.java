@@ -14,29 +14,23 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import alda.AldaServer;
+import alda.integrationtests.commands.utils.ReplCommandExecutorWithExpBackoff;
 import alda.repl.commands.ReplCommand;
 import alda.repl.commands.ReplCommandManager;
 import alda.testutils.AldaServerInfo;
 import alda.testutils.TestEnvironment;
 import alda.testutils.TestEnvironmentStatus;
 
+/*
+ * The test environment is created before, and teared down after,
+ * *all* the tests, by the class Alda.testutils.AldaJunitRunListener
+ */
 public class InfoTest {
 
     private static final String CMD_INFO = "info";
     private final Map<StringBuffer, Pattern[]> TEST_INPUT_OUTPUT_DATA;
-
-    @BeforeClass
-    public static void checkTestEnvironment() throws Exception {
-        if (TestEnvironment.getStatus() == TestEnvironmentStatus.STOPPED){
-            TestEnvironment.setUp();
-        }
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        TestEnvironment.tearDown();
-    }
     
+    // Constructor inits input data
     public InfoTest() {
       TEST_INPUT_OUTPUT_DATA = new HashMap<>();
       TEST_INPUT_OUTPUT_DATA.put(

@@ -1,4 +1,4 @@
-package alda.integrationtests.commands;
+package alda.integrationtests.commands.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
