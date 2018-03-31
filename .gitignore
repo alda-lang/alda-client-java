@@ -1,2 +1,7 @@
 .nrepl*
 /test/resources/server
+
+# Eclipse
+.classpath
+.project
+.settings
