@@ -1,4 +1,4 @@
-package alda.integrationtests.commands.utils;
+package alda.integrationtests.commands;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -10,14 +10,18 @@ import alda.AldaServer;
 import jline.console.ConsoleReader;
 import alda.repl.commands.ReplCommand;
 
-public class ReplCommandExecutorWithExpBackoff {
+/*
+ * Executes a REPL command with an Exponential Backoff policy
+ * See implementation for details
+ */
+public class ReplCommandExecutor {
 
   private static final int EXP_BACKOFF_MAX_RETRIES = 5;
   private static final int EXP_BACKOFF_INITIAL_DELAY_MS = 2500;
   
   private final ReplCommand cmd;
   
-  public ReplCommandExecutorWithExpBackoff(ReplCommand cmd) {
+  public ReplCommandExecutor(ReplCommand cmd) {
     this.cmd = cmd;
   }
   

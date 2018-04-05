@@ -14,7 +14,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import alda.AldaServer;
-import alda.integrationtests.commands.utils.ReplCommandExecutorWithExpBackoff;
 import alda.repl.commands.ReplCommand;
 import alda.repl.commands.ReplCommandManager;
 import alda.testutils.AldaServerInfo;
@@ -92,7 +91,7 @@ public class InfoTest {
      ReplCommandManager cmdManager = new ReplCommandManager();
      ReplCommand infoCmd = cmdManager.get(CMD_INFO);
      assertNotNull("Command manager did not return an instance when querying for command '"+ CMD_INFO +"'", infoCmd);
-     ReplCommandExecutorWithExpBackoff cmdExecutor = new ReplCommandExecutorWithExpBackoff(infoCmd);
+     ReplCommandExecutor cmdExecutor = new ReplCommandExecutor(infoCmd);
      
      try {
        int nQuery = 1;
