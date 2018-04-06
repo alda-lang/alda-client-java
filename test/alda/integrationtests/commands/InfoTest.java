@@ -20,23 +20,16 @@ import alda.testutils.AldaServerInfo;
 import alda.testutils.TestEnvironment;
 import alda.testutils.TestEnvironmentStatus;
 
+/*
+ * The test environment is created before, and teared down after,
+ * *all* the tests, by the class Alda.testutils.AldaJunitRunListener
+ */
 public class InfoTest {
 
     private static final String CMD_INFO = "info";
     private final Map<StringBuffer, Pattern[]> TEST_INPUT_OUTPUT_DATA;
-
-    @BeforeClass
-    public static void checkTestEnvironment() throws Exception {
-        if (TestEnvironment.getStatus() == TestEnvironmentStatus.STOPPED){
-            TestEnvironment.setUp();
-        }
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        TestEnvironment.tearDown();
-    }
     
+    // Constructor inits input data
     public InfoTest() {
       TEST_INPUT_OUTPUT_DATA = new HashMap<>();
       TEST_INPUT_OUTPUT_DATA.put(
@@ -98,7 +91,7 @@ public class InfoTest {
      ReplCommandManager cmdManager = new ReplCommandManager();
      ReplCommand infoCmd = cmdManager.get(CMD_INFO);
      assertNotNull("Command manager did not return an instance when querying for command '"+ CMD_INFO +"'", infoCmd);
-     ReplCommandExecutorWithExpBackoff cmdExecutor = new ReplCommandExecutorWithExpBackoff(infoCmd);
+     ReplCommandExecutor cmdExecutor = new ReplCommandExecutor(infoCmd);
      
      try {
        int nQuery = 1;

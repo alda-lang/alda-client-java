@@ -3,7 +3,7 @@
   :dependencies '[; dev
                   [adzerk/bootlaces         "0.1.13" :scope "test"]
                   [junit/junit              "4.12"   :scope "test"]
-                  [radicalzephyr/boot-junit "0.2.1"  :scope "test"]
+                  [radicalzephyr/boot-junit "0.4.0"  :scope "test"]
                   [str-to-argv              "0.1.1"  :scope "test"]
 
                   ; silence slf4j logging dammit
@@ -52,7 +52,7 @@
   "Compile and run jUnit tests."
   []
   (comp (javac)
-        (junit)))
+        (junit :listeners #{"alda.testutils.AldaJunitRunListener"})))
 
 (deftask dev
   "Runs the Alda client for development.
