@@ -18,12 +18,12 @@
                   [us.bpsm/edn-java                 "0.4.6"]
                   [com.jcabi/jcabi-manifests        "1.1"]
                   [org.zeromq/jeromq                "0.4.0"]
-                  [jline                            "2.14.3"]])
+                  [jline                            "2.14.6"]])
 
 (require '[adzerk.bootlaces         :refer :all]
          '[radicalzephyr.boot-junit :refer (junit)])
 
-(def ^:const +version+ "0.5.0")
+(def ^:const +version+ "0.5.1")
 
 (bootlaces! +version+)
 
@@ -72,7 +72,7 @@
    running the resulting executable) is that the client does not have the
    necessary permissions to start a new process, e.g. to start an Alda server
    via the client."
-  [x args ARGS str "The string of CLI args to pass to the client." ]
+  [x args ARGS str "The string of CLI args to pass to the client."]
   (comp
     (javac)
     (with-pass-thru fs
