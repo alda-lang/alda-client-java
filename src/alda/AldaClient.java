@@ -128,9 +128,8 @@ public class AldaClient {
     System.out.println("If you have any currently running servers, you may want to restart them so that they are running the latest version.");
   }
 
-
-
-  public static void listProcesses(int timeout) throws SystemException {
+  public static void listProcesses(AldaServerOptions serverOpts)
+    throws SystemException {
     IAldaProcessReader processReader = getProcessReader();
     List<AldaProcess> processes = processReader.getProcesses();
 
@@ -141,10 +140,10 @@ public class AldaClient {
                             "port (pid: %d)\n", process.pid);
           System.out.flush();
         } else {
-          AldaServer server = new AldaServer("localhost",
-                                             process.port,
-                                             timeout,
-                                             false, false);
+          serverOpts.host = "localhost";
+          serverOpts.port = process.port;
+          serverOpts.quiet = false;
+          AldaServer server = new AldaServer(serverOpts);
           server.status();
         }
       } else if (process.type == "worker") {

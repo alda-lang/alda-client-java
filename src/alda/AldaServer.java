@@ -34,14 +34,15 @@ public class AldaServer extends AldaProcess {
   private static final int BUSY_WORKER_TIMEOUT = 10000;      // ms
   private static final int BUSY_WORKER_RETRY_INTERVAL = 500; // ms
 
-  public AldaServer(String host, int port, int timeout, boolean verbose, boolean quiet) {
-    this.host = normalizeHost(host);
-    this.port = port;
-    this.timeout = timeout;
-    this.verbose = verbose;
-    this.quiet = quiet;
+  public AldaServer(AldaServerOptions opts) {
+    host    = normalizeHost(opts.host);
+    port    = opts.port;
+    timeout = opts.timeout;
+    verbose = opts.verbose;
+    quiet   = opts.quiet;
+    noColor = opts.noColor;
 
-    AnsiConsole.systemInstall();
+    if (!noColor) AnsiConsole.systemInstall();
   }
 
   // Calculate the number of retries before giving up, based on a fixed retry
@@ -145,16 +146,27 @@ public class AldaServer extends AldaProcess {
     }
 
     prefix += Integer.toString(port);
-    prefix = String.format("[%s] ", ansi().fg(BLUE)
-                                          .a(prefix)
-                                          .reset()
-                                          .toString());
+
+    if (noColor) {
+      prefix = String.format("[%s] ", prefix);
+    } else {
+      prefix = String.format("[%s] ", ansi().fg(BLUE)
+                                            .a(prefix)
+                                            .reset()
+                                            .toString());
+    }
 
     System.out.println(prefix + message);
   }
 
   public void error(String message) {
-    String prefix = ansi().fg(RED).a("ERROR ").reset().toString();
+    String prefix;
+    if (noColor) {
+      prefix = "ERROR ";
+    } else {
+      prefix = ansi().fg(RED).a("ERROR ").reset().toString();
+    }
+
     // save and restore quiet value to print out errors
     boolean oldQuiet = quiet;
     quiet = false;
@@ -166,17 +178,29 @@ public class AldaServer extends AldaProcess {
   private final String X = "\u2717";
 
   private void announceReady() {
-    msg(ansi().a("Ready ").fg(GREEN).a(CHECKMARK).reset().toString());
+    if (noColor) {
+      msg("Ready " + CHECKMARK);
+    } else {
+      msg(ansi().a("Ready ").fg(GREEN).a(CHECKMARK).reset().toString());
+    }
   }
 
   private void announceServerUp() {
-    msg(ansi().a("Server up ").fg(GREEN).a(CHECKMARK).reset().toString());
+    if (noColor) {
+      msg("Server up " + CHECKMARK);
+    } else {
+      msg(ansi().a("Server up ").fg(GREEN).a(CHECKMARK).reset().toString());
+    }
   }
 
   private void announceServerDown(boolean isGood) {
     Color color = isGood ? GREEN : RED;
     String glyph = isGood ? CHECKMARK : X;
-    msg(ansi().a("Server down ").fg(color).a(glyph).reset().toString());
+    if (noColor) {
+      msg("Server down " + glyph);
+    } else {
+      msg(ansi().a("Server down ").fg(color).a(glyph).reset().toString());
+    }
   }
 
   private void announceServerDown() {

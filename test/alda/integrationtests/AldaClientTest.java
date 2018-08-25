@@ -1,6 +1,7 @@
 package alda.integrationtests;
 
 import alda.AldaClient;
+import alda.AldaServerOptions;
 import alda.testutils.AldaServerInfo;
 import alda.testutils.TestEnvironment;
 import alda.testutils.TestEnvironmentStatus;
@@ -33,13 +34,14 @@ public class AldaClientTest {
           Thread.sleep(1500);
         }
         */
-      
+
         // Redirect StdOut
         PrintStream oldStdOut = System.out;
         System.setOut(new PrintStream(stdOutContent));
         try {
-
-            AldaClient.listProcesses(30);
+            AldaServerOptions serverOpts = new AldaServerOptions();
+            serverOpts.timeout = 30;
+            AldaClient.listProcesses(serverOpts);
 
             Map<Integer, Integer> serverPortsFound = new HashMap<>();
             Pattern serverPortPattern = Pattern.compile("\\[(.*?)\\]");

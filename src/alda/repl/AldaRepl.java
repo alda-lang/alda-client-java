@@ -89,7 +89,7 @@ public class AldaRepl {
       e.printStackTrace();
       ExitCode.SYSTEM_ERROR.exit();
     }
-    AnsiConsole.systemInstall();
+    if (!server.noColor) AnsiConsole.systemInstall();
   }
 
   /**
@@ -106,7 +106,7 @@ public class AldaRepl {
       out = out + String.format("%1$"+offset+"s", " ");
     }
     out = out + toFormat;
-    if (color != null) {
+    if (!server.noColor && color != null) {
       out = ansi().fg(color).a(out).reset().toString();
     }
     return out;
@@ -219,12 +219,21 @@ public class AldaRepl {
     System.out.println();
   }
 
+  private String asciiArt() {
+    if (server.noColor) return ASCII_ART;
+    return ansi().fg(BLUE).a(ASCII_ART).reset().toString();
+  }
+
+  private String helpText() {
+    if (server.noColor) return HELP_TEXT;
+    return ansi().fg(WHITE).bold().a(HELP_TEXT).reset().toString();
+  }
+
   public void run() {
-    System.out.println(ansi().fg(BLUE).a(ASCII_ART).reset());
+    System.out.println(asciiArt());
     System.out.println(centerText(ASCII_WIDTH, AldaClient.version(), CYAN));
     System.out.println(centerText(ASCII_WIDTH, "repl session", CYAN));
-
-    System.out.println("\n" + ansi().fg(WHITE).bold().a(HELP_TEXT).reset() + "\n");
+    System.out.println("\n" + helpText() + "\n");
 
     if (!server.checkForConnection()) {
       offerToStartServer();

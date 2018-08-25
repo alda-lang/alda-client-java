@@ -41,6 +41,10 @@ public class Main {
                description = "Disable non-error messages")
     public boolean quiet = false;
 
+    @Parameter(names = {"--no-color"},
+               description = "Disable color output.")
+    public boolean noColor = false;
+
     @Parameter(names = {"-H", "--host"},
                description = "The hostname of the Alda server")
     public String host = "localhost";
@@ -207,11 +211,15 @@ public class Main {
       ExitCode.USER_ERROR.exit();
     }
 
-    AldaServer server = new AldaServer(globalOpts.host,
-                                       globalOpts.port,
-                                       globalOpts.timeout,
-                                       globalOpts.verbose,
-                                       globalOpts.quiet);
+    AldaServerOptions serverOpts = new AldaServerOptions();
+    serverOpts.host    = globalOpts.host;
+    serverOpts.port    = globalOpts.port;
+    serverOpts.timeout = globalOpts.timeout;
+    serverOpts.verbose = globalOpts.verbose;
+    serverOpts.quiet   = globalOpts.quiet;
+    serverOpts.noColor = globalOpts.noColor;
+
+    AldaServer server = new AldaServer(serverOpts);
 
     try {
       if (globalOpts.help) {
@@ -280,7 +288,7 @@ public class Main {
 
         case "list":
           handleCommandSpecificHelp(jc, "list", list);
-          AldaClient.listProcesses(globalOpts.timeout);
+          AldaClient.listProcesses(serverOpts);
           break;
 
         case "status":

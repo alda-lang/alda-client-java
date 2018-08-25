@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 public class AldaProcess {
   public boolean verbose = false;
   public boolean quiet = false;
+  public boolean noColor = false;
   public String host;
   public int pid;
   public int port;
