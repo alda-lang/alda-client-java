@@ -72,7 +72,7 @@ public class ReplSave implements ReplCommand {
   }
   @Override
   public String docSummary() {
-    return "Saves an the current REPL session into an Alda score.";
+    return "Saves the current REPL session as an Alda score file.";
   }
   @Override
   public String docDetails() {
