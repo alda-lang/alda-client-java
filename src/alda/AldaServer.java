@@ -425,6 +425,9 @@ public class AldaServer extends AldaProcess {
         switch (status) {
           case "parsing": msg("Parsing/evaluating..."); break;
           case "playing": msg("Playing..."); break;
+          // In rare cases (i.e. when the score is really short), the worker can
+          // be done playing the score already.
+          case "success": msg("Done playing."); break;
           default: msg(status);
         }
       }
