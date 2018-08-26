@@ -28,18 +28,12 @@ public class AldaClientTest {
 
     @Test
     public void listProcessesOutput() throws Exception {
-        /*
-        while(TestEnvironment.getStatus() != TestEnvironmentStatus.STARTED) {
-          System.err.println("Awaiting test environment to start...");
-          Thread.sleep(1500);
-        }
-        */
-
         // Redirect StdOut
         PrintStream oldStdOut = System.out;
         System.setOut(new PrintStream(stdOutContent));
         try {
             AldaServerOptions serverOpts = new AldaServerOptions();
+            serverOpts.noColor = true;
             serverOpts.timeout = 30;
             AldaClient.listProcesses(serverOpts);
 
@@ -53,7 +47,7 @@ public class AldaClientTest {
                 if (line.contains("Server up")){
                     Matcher sp = serverPortPattern.matcher(line);
                     if (sp.find()){
-                        int srvPort = Integer.parseInt(cleanAnsiEscapes(sp.group(1)));
+                        int srvPort = Integer.parseInt(sp.group(1));
                         int numberOfWorkers = 0;
 
                         Matcher sbp = serverBackendPortPattern.matcher(line);
@@ -78,10 +72,6 @@ public class AldaClientTest {
             System.out.println(stdOutContent);
         }
 
-    }
-
-    private String cleanAnsiEscapes(String string) {
-        return string.replaceAll("\u001B\\[[;\\d]*m", "");
     }
 
     private int parseOutputForNumberOfWorkersOnBackendPort(String[] lines, int srv_backend_port) {
