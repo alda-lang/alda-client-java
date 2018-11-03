@@ -7,10 +7,13 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.SystemUtils;
+
 public class TestEnvironment {
 
     private static final String ALDA_EXEC_ENVIRONMENT_VAR = "ALDA_EXECUTABLE";
     private static final String ALDA_EXEC_INSTALL_PATH_UNIX = "/usr/local/bin/alda";
+    private static final String ALDA_EXEC_INSTALL_PATH_WIN= "C:\\Program Files\\Alda\\alda.exe";
     private static final String ALDA_EXEC_FALLBACK = "test/resources/server/alda";
 
     private static TestEnvironmentStatus STATUS = TestEnvironmentStatus.STOPPED;
@@ -45,16 +48,21 @@ public class TestEnvironment {
     }
 
     private static String findAldaExecutable() {
-
         // 1. check environment variable
         if (System.getenv(ALDA_EXEC_ENVIRONMENT_VAR) != null) {
             return System.getenv(ALDA_EXEC_ENVIRONMENT_VAR);
         }
-        // 2. check default alda *nix install path
-        if (new File(ALDA_EXEC_INSTALL_PATH_UNIX).exists()){
-            return ALDA_EXEC_INSTALL_PATH_UNIX;
+        if (SystemUtils.IS_OS_WINDOWS) {
+            // 2. check default alda Win install path
+            if (new File(ALDA_EXEC_INSTALL_PATH_WIN).isFile()) {
+                return ALDA_EXEC_INSTALL_PATH_WIN;
+            }
+        } else {
+            // 2. check default alda *nix install path
+            if (new File(ALDA_EXEC_INSTALL_PATH_UNIX).exists()) {
+                return ALDA_EXEC_INSTALL_PATH_UNIX;
+            }
         }
-
         // 3. default fallback
         return ALDA_EXEC_FALLBACK;
     }
@@ -77,7 +85,8 @@ public class TestEnvironment {
     private static void startAldaServerIfNotRunning(int port, int numberOfWorkers)
     throws SystemException {
       try {
-        Process p = Runtime.getRuntime().exec(ALDA_EXECUTABLE+" -p "+port+" -w "+numberOfWorkers+" up");
+        String cmd = ALDA_EXECUTABLE+" -p "+port+" -w "+numberOfWorkers+" up";
+        Process p = Runtime.getRuntime().exec(cmd);
         printProcessOutput(p.getInputStream());
       } catch (IOException e) {
         throw new SystemException("Unable to start Alda server.", e);
