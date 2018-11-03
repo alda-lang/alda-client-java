@@ -25,8 +25,9 @@ To run the automated test suite:
     boot test
 
 These are integration tests that rely upon an `alda` executable being available
-at a known location. By default, it is assumed to be in `/usr/local/bin`, but if
-you have `alda` in another location (using `/usr/bin` here as an example), you
+at a known location. By default, it is assumed to be in `/usr/local/bin/`
+on *nix and in `C:\Program Files\Alda\` on Windows, but if
+you have `alda` in another location (using `/usr/bin/` here as an example), you
 can specify the location via the `ALDA_EXECUTABLE` environment variable:
 
     ALDA_EXECUTABLE=/usr/bin/alda boot test

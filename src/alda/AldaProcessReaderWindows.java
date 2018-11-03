@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 public class AldaProcessReaderWindows implements IAldaProcessReader {
     private static final String ALDA_TASK_NAME = "alda.exe";
     private static final String TASKLIST_COMMAND =
-            //"tasklist.exe /fo csv /nh /fi \"/IMAGENAME eq "+ ALDA_TASK_NAME + "\"";
             "WMIC path win32_process where \"Caption='alda.exe'\" get Caption,Commandline,Processid /FORMAT:csv";
     private static final int TASKLIST_COMMAND_N_EXPECTED_COLS = 4;  // Amount of columns expected to be returned by executing TASKLIST_COMMAND
     private static final int TASKLIST_COL_TASKCMD = 2;  // 0 <= this < TASKLIST_COMMAND_N_EXPECTED_COLS
@@ -26,7 +25,6 @@ public class AldaProcessReaderWindows implements IAldaProcessReader {
         try {
             Process p = Runtime.getRuntime().exec(TASKLIST_COMMAND);
             InputStreamReader isr = new InputStreamReader(p.getInputStream());
-
             BufferedReader input = new BufferedReader(isr);
             String line;
             while ((line = input.readLine()) != null) {
