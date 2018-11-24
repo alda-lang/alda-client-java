@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 0.6.0 (2018-11-24)
+
+* Fixed the mechanism for determining whether the Alda client version is the
+  same as the latest release (i.e. whether or not it's up to date).
+
+  What we had up until now happened to work for the 1.0.0-rcXX series of
+  releases, but there is an edge case involving upgrading from 1.0.0-rcXX to
+  1.0.0. We were doing a substring search, whereas we needed to do an exact
+  match.
+
 ## 0.5.3 (2018-08-25)
 
 * Handled an edge case re: what to display when playing extremely short scores.

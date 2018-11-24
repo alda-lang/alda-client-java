@@ -61,7 +61,7 @@ public class AldaClient {
     String latestTag = job.getAsJsonObject().get("tag_name").toString().replaceAll("\"", "");
 
     // Check to see if we currently have the version determined by latestTag
-    if (latestTag.indexOf(clientVersion) != -1 || clientVersion.indexOf(latestTag) != -1) {
+    if (clientVersion.equals(latestTag)) {
       System.out.println("Your version of alda (" + clientVersion +") is up to date!");
       return;
     }
