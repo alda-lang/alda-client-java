@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Unreleased
+
+* Made adjustments to the command that prints for Windows users when running
+  `alda update` to update the Alda client.
+
+  For details, see issue
+  [#35](https://github.com/alda-lang/alda-client-java/issues/35).
+
 ## 0.6.0 (2018-11-24)
 
 * Fixed the mechanism for determining whether the Alda client version is the
