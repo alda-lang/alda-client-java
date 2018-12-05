@@ -93,9 +93,9 @@ public class AldaClient {
         "   alda down\n" +
         "\n" +
 
-        "Then, run the following command in your terminal to download the latest alda.exe:\n" +
+        "Then, run the following command in your Powershell (you can find Powershell in your Start menu) to download the latest alda.exe:\n" +
         "\n" +
-        "    powershell -Command Invoke-WebRequest -Uri \"" + downloadURL + "\" -OutFile \"" + programPath + "\"\n" +
+        "    powershell -Command {[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Ssl3 -bor [System.Net.SecurityProtocolType]::Tls -bor [System.Net.SecurityProtocolType]::Tls12 ; Invoke-WebRequest -Uri \"" + downloadURL + "\" -OutFile \"" + programPath + "\"}\n" + 
         "\n" +
 
         "Or, if you'd prefer, you can install the latest alda.exe yourself from:\n" +
