@@ -154,6 +154,9 @@ public class Main {
     public String outputType = "data";
   }
 
+  @Parameters(commandDescription = "Display a list of available instruments")
+  private static class CommandInstruments extends AldaCommand {}
+
   public static void handleCommandSpecificHelp(JCommander jc, String name, AldaCommand c) {
     if(c.help) {
       jc.usage(name);
@@ -178,6 +181,7 @@ public class Main {
     CommandPlay          play          = new CommandPlay();
     CommandStop          stop          = new CommandStop();
     CommandParse         parse         = new CommandParse();
+    CommandInstruments   instruments   = new CommandInstruments();
 
     JCommander jc = new JCommander(globalOpts);
     jc.setProgramName("alda");
@@ -201,6 +205,7 @@ public class Main {
     jc.addCommand("play", play);
     jc.addCommand("stop", stop, "stop-playback");
     jc.addCommand("parse", parse);
+    jc.addCommand("instruments", instruments);
 
     try {
       jc.parse(argv);
@@ -368,6 +373,11 @@ public class Main {
               );
           }
           break;
+
+        case "instruments":
+            handleCommandSpecificHelp(jc, "instruments", instruments);
+            server.displayInstruments();
+            break;
       }
     } catch (AldaException e) {
       server.error(e.getMessage());

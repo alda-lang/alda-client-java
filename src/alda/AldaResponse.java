@@ -1,5 +1,6 @@
 package alda;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,6 +14,7 @@ public class AldaResponse {
   public String body;
   public String jobId;
   public AldaScore score;
+  public List<String> instruments;
   public byte[] workerAddress;
   public boolean noWorker;
 

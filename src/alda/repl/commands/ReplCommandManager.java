@@ -39,7 +39,8 @@ public class ReplCommandManager {
       new ReplStatus(),
       new ReplUp(),
       new ReplVersion(),
-      new ReplInfo()
+      new ReplInfo(),
+      new ReplInstruments()
     };
 
     for (ReplCommand c : cmds) {

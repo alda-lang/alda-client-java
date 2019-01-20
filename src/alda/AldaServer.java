@@ -531,4 +531,14 @@ public class AldaServer extends AldaProcess {
     String fileBody = Util.readFile(file);
     parse(fileBody, outputType);
   }
+
+  public void displayInstruments() throws NoResponseException {
+    AldaRequest req = new AldaRequest(host, port);
+    req.command = "instruments";
+    AldaResponse res = req.send();
+
+    for (String instrument : res.instruments) {
+      System.out.println(instrument);
+    }
+  }
 }
