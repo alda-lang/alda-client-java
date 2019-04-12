@@ -1,6 +1,8 @@
 package alda.testutils;
 
 import alda.error.SystemException;
+import alda.AldaServer;
+import alda.AldaServerOptions;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -72,6 +74,20 @@ public class TestEnvironment {
 
     public static TestEnvironmentStatus getStatus() {
         return STATUS;
+    }
+
+    public static AldaServer getServer() {
+        assert(RUNNING_SERVERS != null);
+        assert(RUNNING_SERVERS.size() > 0);
+
+        AldaServerInfo server0Info = RUNNING_SERVERS.get(0);
+
+        AldaServerOptions serverOpts = new AldaServerOptions();
+        serverOpts.host = server0Info.getHost();
+        serverOpts.port = server0Info.getPort();
+        serverOpts.timeout = 30;
+
+        return new AldaServer(serverOpts);
     }
 
     private static void startAldaServerIfNotRunning(int port, int numberOfWorkers)

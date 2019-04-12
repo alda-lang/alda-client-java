@@ -80,14 +80,7 @@ public class InfoTest {
      assertNotNull("Test environment servers list shall not be null", servers);
      assertTrue("Test environment servers list shall contain at least one server", servers.size() > 0);
 
-     AldaServerInfo server0Info = servers.get(0);
-
-     AldaServerOptions serverOpts = new AldaServerOptions();
-     serverOpts.host = server0Info.getHost();
-     serverOpts.port = server0Info.getPort();
-     serverOpts.timeout = 30;
-
-     AldaServer server = new AldaServer(serverOpts);
+     AldaServer server = TestEnvironment.getServer();
 
      //AldaRepl repl = new AldaRepl(server, globalOpts.verbose);
      ReplCommandManager cmdManager = new ReplCommandManager();
