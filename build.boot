@@ -50,9 +50,11 @@
 
 (deftask test
   "Compile and run jUnit tests."
-  []
-  (comp (javac)
-        (junit :listeners #{"alda.testutils.AldaJunitRunListener"})))
+  [c class-names CLASSNAME #{str} "The set of Java class names to run tests from."]
+  (comp
+    (javac)
+    (junit :listeners   #{"alda.testutils.AldaJunitRunListener"}
+           :class-names class-names)))
 
 (deftask dev
   "Runs the Alda client for development.
