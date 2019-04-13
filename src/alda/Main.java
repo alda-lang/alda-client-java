@@ -11,6 +11,7 @@ import com.beust.jcommander.ParameterException;
 import alda.error.AldaException;
 import alda.error.ExitCode;
 import alda.error.InvalidOptionsException;
+import alda.error.SystemException;
 import alda.repl.AldaRepl;
 
 public class Main {
@@ -236,9 +237,7 @@ public class Main {
       command = command == null ? "help" : command;
 
       // used for play and parse commands
-      String mode;
-      String inputType;
-      String outputType;
+      String input;
 
       // used for up and downup commands
       boolean success;
@@ -310,7 +309,8 @@ public class Main {
 
         case "play":
           handleCommandSpecificHelp(jc, "play", play);
-          inputType = Util.inputType(play.file, play.code);
+
+          input = findInput(play.file, play.code);
 
           if (play.historyFile != null) {
             if (!play.history.isEmpty())
@@ -321,23 +321,7 @@ public class Main {
             play.history = Util.readFile(play.historyFile);
           }
 
-          switch (inputType) {
-            case "file":
-              String code = Util.readFile(play.file);
-              server.play(code, play.history, play.from, play.to);
-              break;
-            case "code":
-              server.play(play.code, play.history, play.from, play.to);
-              break;
-            case "stdin":
-              server.play(Util.getStdIn(), play.history, play.from, play.to);
-              break;
-            default:
-              throw new InvalidOptionsException(
-                "Please provide some Alda code in the form of a string, " +
-                "file, or STDIN."
-              );
-          }
+          server.play(input, play.history, play.from, play.to);
           break;
 
         case "stop":
@@ -348,7 +332,8 @@ public class Main {
 
         case "parse":
           handleCommandSpecificHelp(jc, "parse", parse);
-          inputType = Util.inputType(parse.file, parse.code);
+
+          input = findInput(parse.file, parse.code);
 
           if (!(parse.outputType.equals("data") ||
                 parse.outputType.equals("events")))
@@ -356,28 +341,13 @@ public class Main {
               "Invalid --output type. Valid output types are: data, events"
             );
 
-          switch (inputType) {
-            case "file":
-              server.parse(parse.file, parse.outputType);
-              break;
-            case "code":
-              server.parse(parse.code, parse.outputType);
-              break;
-            case "stdin":
-              server.parse(Util.getStdIn(), parse.outputType);
-              break;
-            default:
-              throw new InvalidOptionsException(
-                "Please provide some Alda code in the form of a string, " +
-                "file, or STDIN."
-              );
-          }
+          server.parse(input, parse.outputType);
           break;
 
         case "instruments":
-            handleCommandSpecificHelp(jc, "instruments", instruments);
-            server.displayInstruments();
-            break;
+          handleCommandSpecificHelp(jc, "instruments", instruments);
+          server.displayInstruments();
+          break;
       }
     } catch (AldaException e) {
       server.error(e.getMessage());
@@ -390,4 +360,24 @@ public class Main {
     ExitCode.SUCCESS.exit();
   }
 
+  private static boolean receivingInputFromStdin() {
+    return System.console() == null;
+  }
+
+  private static String findInput(File file, String code)
+    throws InvalidOptionsException, SystemException {
+    if (file != null && code != null) {
+      throw new InvalidOptionsException(
+        "You must supply either a --file or --code argument (not both)."
+      );
+    }
+
+    if (file != null) return Util.readFile(file);
+    if (code != null) return code;
+    if (receivingInputFromStdin()) return Util.getStdIn();
+
+    throw new InvalidOptionsException(
+      "Please provide some Alda code in the form of a string, file, or STDIN."
+    );
+  }
 }

@@ -1,7 +1,6 @@
 package alda;
 
 import alda.error.ExitCode;
-import alda.error.InvalidOptionsException;
 import alda.error.SystemException;
 
 import java.io.BufferedInputStream;
@@ -138,30 +137,6 @@ public final class Util {
                          "answer is no.\n\n" +
                          "To auto-respond yes, use the -y/--yes option.");
       return false;
-    }
-  }
-
-  public static String inputType(File file, String code)
-    throws InvalidOptionsException {
-    if (file == null && code == null) {
-      // check to see if we're receiving input from STDIN
-      if (System.console() == null) {
-        return "stdin";
-      } else {
-        // if not, input type is the existing score in its entirety
-        return "score";
-      }
-    }
-
-    if (file != null && code != null) {
-      throw new InvalidOptionsException("You must supply either a --file or " +
-                                        "--code argument (not both).");
-    }
-
-    if (file != null) {
-      return "file";
-    } else {
-      return "code";
     }
   }
 
