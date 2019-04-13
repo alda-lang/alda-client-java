@@ -28,7 +28,7 @@ public class AldaServer extends AldaProcess {
   private static final int SHUTDOWN_RETRY_INTERVAL = 250; // ms
   private static final int STATUS_RETRY_INTERVAL = 200;  // ms
   private static final int STATUS_RETRIES = 10;
-  private static final int PLAY_STATUS_INTERVAL = 250;   // ms
+  private static final int JOB_STATUS_INTERVAL = 250;   // ms
 
   // Relevant to playing input from the REPL.
   private static final int BUSY_WORKER_TIMEOUT = 10000;      // ms
@@ -361,13 +361,10 @@ public class AldaServer extends AldaProcess {
     throws NoAvailableWorkerException, UnsuccessfulException,
            NoResponseException {
 
-    String jobId = UUID.randomUUID().toString();
-
     AldaRequest req = new AldaRequest(host, port);
     req.command = "play";
     req.body = code;
     req.options = new AldaRequestOptions();
-    req.options.jobId = jobId;
 
     if (from != null) {
       req.options.from = from;
@@ -381,65 +378,7 @@ public class AldaServer extends AldaProcess {
       req.options.history = history;
     }
 
-    // play requests need to be sent exactly once and not retried, otherwise
-    // the score could be played more than once.
-    //
-    // play requests are asynchronous; the response from the worker should be
-    // immediate, and then in the code below, we repeatedly ask the worker for
-    // status and send updates to the user until the status is "playing."
-    AldaResponse res = req.send(3000, 0);
-
-    if (!res.success) {
-      String noWorkersYetMsg = "No worker processes are ready yet";
-      String workersBusyMsg = "All worker processes are currently busy";
-
-      if (res.body.contains(noWorkersYetMsg) ||
-          res.body.contains(workersBusyMsg)) {
-        throw new NoAvailableWorkerException(res.body);
-      } else {
-        throw new UnsuccessfulException(res.body);
-      }
-    }
-
-    if (res.workerAddress == null) {
-      throw new UnsuccessfulException(
-        "No worker address included in response; unable to check for status."
-      );
-    }
-
-    String status = "requested";
-
-    while (true) {
-      AldaResponse update = playStatus(res.workerAddress, jobId);
-
-      // Ensures that any update we process is for this score, and not a
-      // previous one.
-      if (!update.jobId.equals(jobId)) continue;
-
-      // Bail out if there was some problem server-side.
-      if (!update.success) throw new UnsuccessfulException(update.body);
-
-      // Update the job status if it's different.
-      if (!update.body.equals(status)) {
-        status = update.body;
-        switch (status) {
-          case "parsing": msg("Parsing/evaluating..."); break;
-          case "playing": msg("Playing..."); break;
-          // In rare cases (i.e. when the score is really short), the worker can
-          // be done playing the score already.
-          case "success": msg("Done playing."); break;
-          default: msg(status);
-        }
-      }
-
-      // If the job is still pending, pause and then keep looping.
-      if (update.pending) {
-        Util.sleep(PLAY_STATUS_INTERVAL);
-      } else {
-        // We succeeded!
-        return update;
-      }
-    }
+    return awaitAsyncResponse(req);
   }
 
   public AldaResponse playFromRepl(String input, String history, String from,
@@ -475,10 +414,10 @@ public class AldaServer extends AldaProcess {
   }
 
 
-  public AldaResponse playStatus(byte[] workerAddress, String jobId)
+  public AldaResponse jobStatus(byte[] workerAddress, String jobId)
     throws NoResponseException {
     AldaRequest req = new AldaRequest(host, port);
-    req.command = "play-status";
+    req.command = "job-status";
     req.workerToUse = workerAddress;
     req.options = new AldaRequestOptions();
     req.options.jobId = jobId;
@@ -539,6 +478,76 @@ public class AldaServer extends AldaProcess {
 
     for (String instrument : res.instruments) {
       System.out.println(instrument);
+    }
+  }
+
+  // Makes an initial request, then makes job status requests until the request
+  // is done and returns the final status response.
+  private AldaResponse awaitAsyncResponse(AldaRequest req)
+    throws NoAvailableWorkerException, UnsuccessfulException,
+           NoResponseException {
+    String jobId = UUID.randomUUID().toString();
+    req.options.jobId = jobId;
+
+    // The original request can have side effects (e.g. playing a score), so it
+    // needs to be sent exactly once and not retried, otherwise the side effects
+    // could happen multiple times.
+    //
+    // play requests are asynchronous; the response from the worker should be
+    // immediate, and then in the code below, we repeatedly ask the worker for
+    // status and send updates to the user until the status is "playing."
+    AldaResponse res = req.send(3000, 0);
+
+    if (!res.success) {
+      String noWorkersYetMsg = "No worker processes are ready yet";
+      String workersBusyMsg = "All worker processes are currently busy";
+
+      if (res.body.contains(noWorkersYetMsg) ||
+          res.body.contains(workersBusyMsg)) {
+        throw new NoAvailableWorkerException(res.body);
+      } else {
+        throw new UnsuccessfulException(res.body);
+      }
+    }
+
+    if (res.workerAddress == null) {
+      throw new UnsuccessfulException(
+        "No worker address included in response; unable to check for status."
+      );
+    }
+
+    String status = "requested";
+
+    while (true) {
+      AldaResponse update = jobStatus(res.workerAddress, jobId);
+
+      // Ensures that any update we process is for this score, and not a
+      // previous one.
+      if (!update.jobId.equals(jobId)) continue;
+
+      // Bail out if there was some problem server-side.
+      if (!update.success) throw new UnsuccessfulException(update.body);
+
+      // Update the job status if it's different.
+      if (!update.body.equals(status)) {
+        status = update.body;
+        switch (status) {
+          case "parsing": msg("Parsing/evaluating..."); break;
+          case "playing": msg("Playing..."); break;
+          // In rare cases (i.e. when the score is really short), the worker can
+          // be done already.
+          case "success": msg("Done."); break;
+          default: msg(status);
+        }
+      }
+
+      // If the job is still pending, pause and then keep looping.
+      if (update.pending) {
+        Util.sleep(JOB_STATUS_INTERVAL);
+      } else {
+        // We succeeded!
+        return update;
+      }
     }
   }
 }
