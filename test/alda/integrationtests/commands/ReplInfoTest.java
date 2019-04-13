@@ -25,13 +25,13 @@ import alda.testutils.TestEnvironmentStatus;
  * The test environment is created before, and teared down after,
  * *all* the tests, by the class Alda.testutils.AldaJunitRunListener
  */
-public class InfoTest {
+public class ReplInfoTest {
 
     private static final String CMD_INFO = "info";
     private final Map<StringBuffer, Pattern[]> TEST_INPUT_OUTPUT_DATA;
 
     // Constructor inits input data
-    public InfoTest() {
+    public ReplInfoTest() {
       TEST_INPUT_OUTPUT_DATA = new HashMap<>();
       TEST_INPUT_OUTPUT_DATA.put(
           new StringBuffer(),
