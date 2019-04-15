@@ -19,7 +19,7 @@ public class ReplCommandManager {
   public ReplCommandManager() {
     commands = new HashMap<>();
 
-    // To see the actual command implemnetations, see Repl*.java (for each command)
+    // To see the actual command implementations, see Repl*.java (for each command)
 
     // Temp array to store commands so we can iterate over them later
     ReplCommand[] cmds = {
@@ -40,7 +40,8 @@ public class ReplCommandManager {
       new ReplUp(),
       new ReplVersion(),
       new ReplInfo(),
-      new ReplInstruments()
+      new ReplInstruments(),
+      new ReplExport()
     };
 
     for (ReplCommand c : cmds) {
