@@ -165,6 +165,29 @@ public class Main {
     }
   }
 
+  @Parameters(
+    commandDescription =
+      "Evaluate Alda code and export the score to another format"
+  )
+  private static class CommandExport extends AldaCommand {
+    @Parameter(names = {"-f", "--file"},
+               description = "Read Alda code from a file",
+               converter = FileConverter.class)
+    public File file;
+
+    @Parameter(names = {"-c", "--code"},
+               description = "Supply Alda code as a string")
+    public String code;
+
+    @Parameter(names = {"-F", "--output-format"},
+               description = "The output format (options: midi)")
+    public String outputFormat;
+
+    @Parameter(names = {"-o", "--output"},
+               description = "The output filename")
+    public String outputFilename;
+  }
+
   public static void main(String[] argv) {
     GlobalOptions globalOpts = new GlobalOptions();
 
@@ -183,6 +206,7 @@ public class Main {
     CommandStop          stop          = new CommandStop();
     CommandParse         parse         = new CommandParse();
     CommandInstruments   instruments   = new CommandInstruments();
+    CommandExport        export        = new CommandExport();
 
     JCommander jc = new JCommander(globalOpts);
     jc.setProgramName("alda");
@@ -207,6 +231,7 @@ public class Main {
     jc.addCommand("stop", stop, "stop-playback");
     jc.addCommand("parse", parse);
     jc.addCommand("instruments", instruments);
+    jc.addCommand("export", export);
 
     try {
       jc.parse(argv);
@@ -236,7 +261,7 @@ public class Main {
       String command = jc.getParsedCommand();
       command = command == null ? "help" : command;
 
-      // used for play and parse commands
+      // used for play, parse and export commands
       String input;
 
       // used for up and downup commands
@@ -347,6 +372,33 @@ public class Main {
         case "instruments":
           handleCommandSpecificHelp(jc, "instruments", instruments);
           server.displayInstruments();
+          break;
+
+        case "export":
+          handleCommandSpecificHelp(jc, "export", export);
+
+          input = findInput(export.file, export.code);
+
+          // We currently only support exporting to MIDI. For now, we can allow
+          // the --output-format option to be omitted, and assume that the user
+          // means MIDI.
+          //
+          // In the future, if/when we add other output formats, we should try
+          // to infer the output format from the file extension.
+          if (export.outputFormat == null)
+            export.outputFormat = "midi";
+
+          if (!export.outputFormat.equals("midi"))
+            throw new InvalidOptionsException(
+              "Invalid --output-format. Valid output formats are: midi"
+            );
+
+          if (export.outputFilename == null)
+            throw new InvalidOptionsException(
+              "You must specify an --output filename."
+            );
+
+          server.export(input, export.outputFormat, export.outputFilename);
           break;
       }
     } catch (AldaException e) {

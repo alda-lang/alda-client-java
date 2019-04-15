@@ -481,6 +481,19 @@ public class AldaServer extends AldaProcess {
     }
   }
 
+  public AldaResponse export(String code, String outputFormat, String filename)
+    throws NoAvailableWorkerException, UnsuccessfulException,
+           NoResponseException {
+
+    AldaRequest req = new AldaRequest(host, port);
+    req.command = "export";
+    req.body = code;
+    req.options = new AldaRequestOptions();
+    req.options.filename = filename;
+
+    return awaitAsyncResponse(req);
+  }
+
   // Makes an initial request, then makes job status requests until the request
   // is done and returns the final status response.
   private AldaResponse awaitAsyncResponse(AldaRequest req)
@@ -534,6 +547,7 @@ public class AldaServer extends AldaProcess {
         switch (status) {
           case "parsing": msg("Parsing/evaluating..."); break;
           case "playing": msg("Playing..."); break;
+          case "exporting": msg("Exporting..."); break;
           // In rare cases (i.e. when the score is really short), the worker can
           // be done already.
           case "success": msg("Done."); break;
