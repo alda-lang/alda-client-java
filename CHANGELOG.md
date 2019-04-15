@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## 0.7.0 (2019-04-14)
+
+* New CLI command: `alda export` and REPL command: `:export`
+
+  This command exports an Alda score to another format. Currently, the only
+  supported format is MIDI.
+
+  The score is provided in the same way as it is for `alda play` and `alda
+  parse`: by specifying either a `-f / --file`, a string of `-c / --code`, or
+  piping in the code via STDIN.
+
+  ```
+  alda export -f my-score.alda -F midi -o my-score.alda
+  alda export -c 'piano: c8 d e f' -o piano-notes.mid
+  echo 'piano: c8 d e f' | alda export -o piano-notes.mid
+  ```
+
+  The `:export` REPL command takes a single argument, the output filename:
+
+  ```
+  > :export /path/to/desired-filename.mid
+  ```
+
+* BREAKING CHANGE: The `play-status` internal command has been renamed to
+  `job-status`. Older server versions will not recognize the `job-status`
+  command, so `alda play` and `alda export` commands will not work with older
+  servers. As always, you should restart your servers after updating Alda by
+  running `alda downup`.
+
 ## 0.6.1 (2019-01-19)
 
 * New CLI command: `alda instruments` and REPL command: `:instruments`
