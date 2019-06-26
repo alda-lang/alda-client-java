@@ -1,4 +1,5 @@
 .nrepl*
+.lsp/
 /test/resources/server
 
 # Eclipse
