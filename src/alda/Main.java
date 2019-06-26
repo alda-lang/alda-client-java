@@ -406,6 +406,7 @@ public class Main {
       if (globalOpts.verbose) {
         System.out.println();
         e.printStackTrace();
+        System.out.println("Exit Code: "+ e.getExitCode());
       }
       e.getExitCode().exit();
     }
