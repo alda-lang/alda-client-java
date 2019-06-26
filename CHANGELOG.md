@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.7.1 (2019-06-26)
+
+* To help debug [issue
+  #38](https://github.com/alda-lang/alda-client-java/issues/38), we will now
+  print the exit code baked into an AldaException whenever one is thrown.
+
 ## 0.7.0 (2019-04-14)
 
 * New CLI command: `alda export` and REPL command: `:export`
