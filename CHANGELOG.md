@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+* Fixed the formatting of the `:help load` command (help text for the `:load`
+  command) in the REPL. There were a couple of newlines missing.
+
 ## 0.7.1 (2019-06-26)
 
 * To help debug [issue

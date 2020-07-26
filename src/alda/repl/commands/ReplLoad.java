@@ -135,7 +135,8 @@ public class ReplLoad implements ReplCommand {
   public String docDetails() {
     return "Usage:\n\n" +
       "  :load test/examples/bach_cello_suite_no_1.alda\n" +
-      "  :load /Users/rick/Scores/love_is_alright_tonite.alda" +
+      "  :load /Users/rick/Scores/love_is_alright_tonite.alda\n" +
+      "\n" +
       "Once :load/:save has been executed once:\n" +
       "  :load";
   }
