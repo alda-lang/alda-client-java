@@ -2,6 +2,8 @@
 
 A Java command-line client for [Alda](https://github.com/alda-lang/alda), a music programming language for musicians.
 
+> **NOTE:** This was a component of Alda 1.x. It is no longer in use.
+
 ## Development
 
 ### Overview
