@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.3 (2021-03-06)
+
+* Added a `-c / --client` option to the `alda version` command. When included,
+  only the Alda client version is printed, and not the server version.
+
 ## 0.7.2 (2020-07-26)
 
 * Fixed the formatting of the `:help load` command (help text for the `:load`

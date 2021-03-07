@@ -104,7 +104,11 @@ public class Main {
   private static class CommandStatus extends AldaCommand {}
 
   @Parameters(commandDescription = "Display the version of the Alda client and server")
-  private static class CommandVersion extends AldaCommand {}
+  private static class CommandVersion extends AldaCommand {
+    @Parameter(names = {"-c", "--client"},
+               description = "Only display the Alda client version")
+    public boolean clientVersionOnly = false;
+  }
 
   @Parameters(commandDescription = "Evaluate and play Alda code")
   private static class CommandPlay extends AldaCommand {
@@ -328,8 +332,10 @@ public class Main {
         case "version":
           handleCommandSpecificHelp(jc, "version", version);
           System.out.println("Client version: " + AldaClient.version());
-          System.out.print("Server version: ");
-          server.version();
+          if (!version.clientVersionOnly) {
+            System.out.print("Server version: ");
+            server.version();
+          }
           break;
 
         case "play":
