@@ -18,8 +18,11 @@ import java.net.URL;
 import java.net.URI;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,6 +66,20 @@ public final class Util {
 
   public static Object[] conj(Object[] a, Object b) {
     return concat(a, new Object[]{b});
+  }
+
+  public static String repeat(int times, String input) {
+    return String.join("", Collections.nCopies(times, input));
+  }
+
+  public static String indent(int level, String input) {
+    List<String> lines = new ArrayList<String>();
+
+    for (String line : input.split("\\r?\\n")) {
+      lines.add(repeat(level, "  ") + line);
+    }
+
+    return String.join("\n", lines);
   }
 
   // Given an array of choices like {"yes", "no", "quit"}, offers them to the
@@ -151,9 +168,17 @@ public final class Util {
     return fromStdIn;
   }
 
-  public static String getProgramPath() throws URISyntaxException {
+  private static Path getProgramPathImpl() throws URISyntaxException {
     URI pathURI = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-    return Paths.get(pathURI).toFile().toString();
+    return Paths.get(pathURI);
+  }
+
+  public static String getProgramPath() throws URISyntaxException {
+    return getProgramPathImpl().toFile().toString();
+  }
+
+  public static Path getProgramDir() throws URISyntaxException {
+    return getProgramPathImpl().getParent();
   }
 
   public static String version() {
@@ -162,6 +187,38 @@ public final class Util {
     } else {
       return "unknown / development version";
     }
+  }
+
+  public static String osAndArch() throws SystemException {
+    String os;
+    String arch;
+
+    if (SystemUtils.IS_OS_LINUX) {
+      os = "linux";
+    } else if (SystemUtils.IS_OS_MAC) {
+      os = "darwin";
+    } else if (SystemUtils.IS_OS_WINDOWS) {
+      os = "windows";
+    } else {
+      throw new SystemException(
+        "Unsupported OS: " + SystemUtils.OS_NAME
+      );
+    }
+
+    // This isn't scientific. We just need to figure out which architecture
+    // value out of the 2 used in the Alda releases API (amd64 or 386) is
+    // probably the right one.
+    if (SystemUtils.OS_ARCH.contains("64")) {
+      arch = "amd64";
+    } else if (SystemUtils.OS_ARCH.contains("86")) {
+      arch = "386";
+    } else {
+      throw new SystemException(
+        "Unsupported architecture: " + SystemUtils.OS_ARCH
+      );
+    }
+
+    return String.format("%s-%s", os, arch);
   }
 
   public static String makeApiCall(String apiRequest) throws SystemException {
