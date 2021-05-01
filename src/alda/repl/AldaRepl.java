@@ -20,7 +20,6 @@ import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
 
 import alda.AldaServer;
-import alda.AldaClient;
 import alda.AldaResponse;
 import alda.AldaResponse.AldaScore;
 import alda.error.AlreadyUpException;
@@ -231,7 +230,7 @@ public class AldaRepl {
 
   public void run() {
     System.out.println(asciiArt());
-    System.out.println(centerText(ASCII_WIDTH, AldaClient.version(), CYAN));
+    System.out.println(centerText(ASCII_WIDTH, Util.version(), CYAN));
     System.out.println(centerText(ASCII_WIDTH, "repl session", CYAN));
     System.out.println("\n" + helpText() + "\n");
 

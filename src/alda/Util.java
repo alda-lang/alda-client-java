@@ -3,6 +3,8 @@ package alda;
 import alda.error.ExitCode;
 import alda.error.SystemException;
 
+import com.jcabi.manifests.Manifests;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.Console;
@@ -152,6 +154,14 @@ public final class Util {
   public static String getProgramPath() throws URISyntaxException {
     URI pathURI = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
     return Paths.get(pathURI).toFile().toString();
+  }
+
+  public static String version() {
+    if (Manifests.exists("alda-version")) {
+      return Manifests.read("alda-version");
+    } else {
+      return "unknown / development version";
+    }
   }
 
   public static String makeApiCall(String apiRequest) throws SystemException {

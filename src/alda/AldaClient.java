@@ -8,7 +8,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
 
-import com.jcabi.manifests.Manifests;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,12 +23,6 @@ import java.util.Scanner;
 import org.apache.commons.lang3.SystemUtils;
 
 public class AldaClient {
-  public static String version() {
-    if (Manifests.exists("alda-version")) {
-      return Manifests.read("alda-version");
-    } else {
-      return "unknown / development version";
-    }
   }
 
   public static void updateAlda()
@@ -45,7 +38,7 @@ public class AldaClient {
       );
     }
 
-    String clientVersion = version();
+    String clientVersion = Util.version();
 
     // Make a call to the Github API to get the latest version number/download URL
     String latestApiStr = "https://api.github.com/repos/alda-lang/alda/releases/latest";

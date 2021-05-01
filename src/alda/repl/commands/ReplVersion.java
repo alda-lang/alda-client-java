@@ -1,9 +1,9 @@
 package alda.repl.commands;
 
-import alda.AldaClient;
 import alda.AldaResponse.AldaScore;
 import alda.AldaServer;
 import alda.error.NoResponseException;
+import alda.Util;
 
 import java.util.function.Consumer;
 
@@ -14,7 +14,7 @@ public class ReplVersion implements ReplCommand {
   public void act(String args, StringBuffer history, AldaServer server,
                   ConsoleReader reader, Consumer<AldaScore> newInstrument)
   throws NoResponseException {
-    System.out.println("Client version: " + AldaClient.version());
+    System.out.println("Client version: " + Util.version());
     System.out.print("Server version: ");
     server.setQuiet(false);
     server.version();
