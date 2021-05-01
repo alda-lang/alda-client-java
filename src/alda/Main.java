@@ -271,7 +271,23 @@ public class Main {
       ExitCode.USER_ERROR.exit();
     }
 
-    informUserOfAldaV2(globalOpts.noColor);
+    if (globalOpts.help) {
+      jc.usage();
+      return;
+    }
+
+    String command = jc.getParsedCommand();
+    command = command == null ? "help" : command;
+
+    if (command != "update") {
+      informUserOfAldaV2(globalOpts.noColor);
+    }
+
+    // used for play, parse and export commands
+    String input;
+
+    // used for up and downup commands
+    boolean success;
 
     AldaServerOptions serverOpts = new AldaServerOptions();
     serverOpts.host    = globalOpts.host;
@@ -284,20 +300,6 @@ public class Main {
     AldaServer server = new AldaServer(serverOpts);
 
     try {
-      if (globalOpts.help) {
-        jc.usage();
-        return;
-      }
-
-      String command = jc.getParsedCommand();
-      command = command == null ? "help" : command;
-
-      // used for play, parse and export commands
-      String input;
-
-      // used for up and downup commands
-      boolean success;
-
       switch (command) {
         case "help":
           jc.usage();
