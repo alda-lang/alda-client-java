@@ -294,14 +294,14 @@ public final class Util {
     ISeq argsSeq = ArraySeq.create(args);
     Clojure.var(var.getNamespace(), var.getName()).applyTo(argsSeq);
   }
-  
+
   public static class JsonElementFloatComparator implements Comparator<JsonElement> {
     public static JsonElementFloatComparator INSTANCE = new JsonElementFloatComparator();
-     
+
     @Override
     public int compare(JsonElement arg0, JsonElement arg1) {
       return Float.compare(arg0.getAsFloat(), arg1.getAsFloat());
     }
-    
+
   }
 }
