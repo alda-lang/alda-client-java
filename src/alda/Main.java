@@ -8,6 +8,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParameterException;
 
+import org.fusesource.jansi.AnsiConsole;
+import static org.fusesource.jansi.Ansi.*;
+import static org.fusesource.jansi.Ansi.Color.*;
+
 import alda.error.AldaException;
 import alda.error.ExitCode;
 import alda.error.InvalidOptionsException;
@@ -192,6 +196,27 @@ public class Main {
     public String outputFilename;
   }
 
+  public static void informUserOfAldaV2(boolean noColor) {
+    String out =
+      "\n" +
+      "  Alda 2 is now available!\n" +
+      "  To install the latest version, run %s." +
+      "\n";
+
+    if (noColor) {
+      out = String.format(out, "`alda update`");
+    } else {
+      AnsiConsole.systemInstall();
+
+      out = String.format(
+        out, ansi().bold().a("alda update").toString()
+      );
+      out = ansi().fg(YELLOW).a(out).reset().toString();
+    }
+
+    System.err.println(out);
+  }
+
   public static void main(String[] argv) {
     GlobalOptions globalOpts = new GlobalOptions();
 
@@ -245,6 +270,8 @@ public class Main {
       System.out.println("For usage instructions, see --help.");
       ExitCode.USER_ERROR.exit();
     }
+
+    informUserOfAldaV2(globalOpts.noColor);
 
     AldaServerOptions serverOpts = new AldaServerOptions();
     serverOpts.host    = globalOpts.host;
