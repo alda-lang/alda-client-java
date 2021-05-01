@@ -168,6 +168,7 @@ public final class Util {
     try {
       URL url = new URL(apiRequest);
       HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+      conn.setRequestProperty("User-Agent", "alda " + version());
 
       if (conn.getResponseCode() != 200) {
         throw new SystemException(conn.getResponseMessage());
